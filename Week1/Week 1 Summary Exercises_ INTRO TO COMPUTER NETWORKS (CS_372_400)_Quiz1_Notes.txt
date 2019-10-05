@@ -9,7 +9,6 @@ d_trans	= L/R	= 24576 bits/8400000 bps = 0.00292571428571428571428571428571 s = 
 d_prop	= d/s	= 160000 m / 270000000 m/s = 5.9259259259259259259259259259259e-4 s = 0.000592592 s = 0.59259259259259259259259259259259 ms
 
 (3+1) * 2.92571428571428571428571428571 + 0.59259259259259259259259259259259 = 12.295449735449735449735449735433 = 12.3 ms
-
 _____________________________
 
 R = 1.7 Mbps = 1700000 bps
@@ -64,6 +63,11 @@ d_trans = L/R = 67108864 / 6728571428.5714285714285714285714 = 9.973716518046709
 9.973716518046709129511677282378 + 54.8 = 64.773716518046709129511677282378 ms
 _____________________________
 
+L = 4 MiB = 33554432 bits
+R = 77.3 Gbps/13 = 5946153846.1538461538461538461538 bps/user
+77.1 ms
+_____________________________
+
 L = 7 MiB = 58720256 bits
 R = 75.5 Gbps = 75500000000 bits
 75500000000/9 = 8388888888.8888888888888888888889 bps
@@ -95,6 +99,8 @@ average queuing delay = L(N-1)/(2R) = 58720256 (69-1) / (2*1700000000) = 3992977
 1174.40512 ms
 
 2L/R = 2 * 58720256 / 1700000000 = 0.06908265411764705882352941176471 s = 69.082654117647058823529411764706 ms
+________________
+
 
 ************************************************************
 #24
@@ -142,4 +148,97 @@ d_nodal = d_convert + d_trans + d_prop =
 1/5=0.2
 (2*0.69*0.2) + (2*0.59*0.2) + (1*0.03*0.2) = 0.518 = 51.8%
 
+###############################################
 
+#21
+Suppose there are 2 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 9 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 128.2 km
+
+The speed of propagation through the transmission medium is is 2.7 x 108 m/s
+
+The packet size is 3 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+A--1--2--B
+
+R = 9 Mbps = 9000000 bps
+L = 3 KiB = 3072 B = 24576 bits
+d = 128.2 km = 128200 m
+s = 2.7 x 10^8 m/s = 270000000 m/s
+
+d_trans	= L/R	= 24576 bits / 9000000 bps = 2.7306666666666666666666666666667 ms
+d_prop	= d/s	= 128200 m / 270000000 m/s = 0.47481481481481481481481481481481 ms
+
+(2+1) * 2.7306666666666666666666666666667 + 0.47481481481481481481481481481481 = 8.6668148148148148148148148148149 ms
+8.192 + 0.47481481481481481481481481481481
+
+################################################
+
+#22
+Suppose there are 94 packets entering a queue at the same time. Each packet is of size 2 MiB. The link transmission rate is 1.7 Gbps. What is the queueing delay of packet number 8 (in milliseconds, rounded to one decimal place, e.g. 0.01234 seconds would be entered as "12.3")
+
+L = 2 MiB = 2*1024 * 1024 * 8 = 16777216 bits
+R = 1.7 Gbps = 1700000000 bps
+
+(N-1)L/R = (8-1) * 16777216 / 1700000000 = 0.06908265411764705882352941176471 s = 69.082654117647058823529411764706 ms
+
+################################################
+
+#23
+How long does it take to send a 19 MiB file from Host A to Host B over a circuit-switched network, assuming:
+
+Total link transmission rate = 37.2 Gbps.
+Network is TDM, with 9 permitted users, each with an equal time slot size.
+A link connection requires a setup time of 79.9 ms.
+Your answer should be in miliseconds (ms) with one decimal place, and without the unit (e.g. "140.6" without the quotes)
+
+
+L = 19 MiB = 19 * 1024 * 1024 * 8 = 159383552 bits
+R = 37.2 Gbps = 37200000000 bps
+R/9 = 4133333333.3333333333333333333333 bps/user
+link_setup = 79.9 ms
+
+L/R = 159383552 / 4133333333.3333333333333333333333 + 79.9 = 
+38.560536774193548387096774193549 + 79.9 = 118.46053677419354838709677419355 ms
+
+################################################
+#24
+
+What is the total utilization of a circuit-switched network, accommodating five users with equal bandwidth share, and the following properties:
+
+Three users each using 54% of their bandwidth share
+Two users each using 31% of their bandwidth share
+Give answer in percent, with one decimal place (normal rounding) and no percentage sign (e.g. for 49.15% you would enter "49.2" without the quotes).
+
+1/5=0.2
+
+(3*0.54*0.2) + (2*0.31*0.2) = 0.448 = 44.8%
+
+################################################
+
+#25
+
+analog-digital = 44 Kbps = 44000 bps
+R = 3 Mbps = 3000000 bps
+L = 62 B = 496 bits
+d = 699.8 km = 699800 m
+s = 2.5 * 10^8 = 250000000 m/s
+store-and-forward
+
+d_convert = L/R = 496 / 44000 = 11.272727272727272727272727272727 ms
+d_trans	= L/R = 496 / 3000000 = 0.16533333333333333333333333333333 ms
+d_prop	= d/s = 699800 / 250000000 = 2.7992 ms
+
+d_nodal = d_convert + d_trans + d_prop = 14.23726060606060606060606060606 ms
+
+###############################################
+
+#26
+
+1/5 = 0.2
+
+(2*0.91*0.2) + (2*0.42*0.2) + (1*0.39*0.2) = 0.61 = 61%
