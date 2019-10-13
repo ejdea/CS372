@@ -1,0 +1,90 @@
+#3
+
+Suppose there are 60 packets entering a queue at the same time. Each packet is of size 4 MiB. The link transmission rate is 2.2 Gbps. What is the queueing delay of packet number 43 (in milliseconds, rounded to one decimal place, e.g. 0.01234 seconds would be entered as "12.3")
+
+L = 4 MiB = 4 * 1024 * 1024 * 8 = 33554432 bits
+R = 2.2 Gbps = 2200000000 bps
+
+(N-1)L/R = (43-1) * 33554432 / 2200000000 = 0.64058461090909090909090909090909 s = 640.58461090909090909090909090909 ms
+
+______________________________________________________
+
+#4
+
+How long does it take to send a 16 MiB file from Host A to Host B over a circuit-switched network, assuming:
+
+Total link transmission rate = 28.5 Gbps.
+Network is TDM, with 3 permitted users, each with an equal time slot size.
+A link connection requires a setup time of 51.5 ms.
+Your answer should be in miliseconds (ms) with one decimal place, and without the unit (e.g. "140.6" without the quotes)
+
+L = 16 MiB = 16 * 1024 * 1024 * 8 = 134217728 bits
+R/3 users = 28.5/3 Gbps = 9.5 Gbps = 9500000000 bps
+link_setup = 51.5 ms
+
+L/(R/3) + link_setup = (134217728 / 9500000000) * 1000 + 51.5 = 65.628181894736842105263157894737 ms
+______________________________________________________
+
+#5
+
+Given a link with a maximum transmission rate of 82.6 Mbps. Only two computers, X and Y, wish to transmit starting at time t = 0 seconds. Computer X sends fileX (17 MiB) and computer Y sends fileY (184 KiB), both starting at time t = 0.
+
+Statistical multiplexing is used, with details as follows
+Packet Payload Size = 1000 Bytes
+Packet Header Size = 24 Bytes (overhead)
+Ignore Processing and Queueing delays
+Assume partial packets (packets consisting of less than 1000 Bytes of data) are padded so that they are the same size as full packets.
+Assume continuous alternating-packet transmission.
+Computer X gets the transmission medium first.
+At what time (t = ?) would FileX finish transmitting?
+
+Give answer in seconds, without units, and round to two decimal places (e.g. for an answer of 12.4567 seconds you would enter "12.46" without the quotes)
+
+Lx = 17 MiB = 17 * 1024 * 1024 * 8 = 142606336 bits
+Ly = 184 KiB = 184 * 1024 * 8 = 1507328 bits
+R = 82.6 Mbps = 82600000 bps
+
+NumPacketsX = 142606336 / 8000 = 17825.792 = 17826 packets
+NumPacketsY = 1507328 / 8000 = 188.416 = 189 packets
+TotalNumPackets = 17826 + 189 = 17826 + 189 = 18015 packets
+Total Packet Size = Payload + Header = 1024 B = 8192 bits/packet
+Total # of packets when FileY finishes = 189 * 2 = 378 packets
+
+Tx = (8192 * 18015) / 82600000 bps = 1.7866692493946731234866828087167 s
+Ty = (8192 * 378) / 82600000 bps = 0.03748881355932203389830508474576 s
+
+______________________________________________________
+
+#5 PRACTICE
+
+Lx = 14 MiB = 14 * 1024 * 1024 * 8 = 117440512 bits
+Ly = 177 KiB = 177 * 1024 * 8 = 1449984 bits
+R = 80.6 Mbps = 80600000 bps
+
+NumPacketsX = 117440512 / 8000 = 14680.064 = 14680 packets
+NumPacketsY = 1449984 / 8000 = 181.248 = 182 packets
+TotalNumPackets = 14680 + 182 = 14862 packets
+Total Packet Size = Payload + Header = 1024 B = 8192 bits/packet
+Total # of packets when FileY finishes = 182 * 2 = 364 packets
+
+Tx = (8192 * 14862) / 80600000 bps = 1.5105397518610421836228287841191 s
+Ty = (8192 * 364) / 80600000 bps = 0.03699612903225806451612903225806 s
+
+______________________________________________________
+
+#5 PRACTICE
+
+Lx = 15 MiB = 15 * 1024 * 1024 * 8 = 125829120 bits
+Ly = 270 KiB = 270 * 1024 * 8 = 2211840 bits
+R = 27.9 Mbps = 27900000 bps
+
+NumPacketsX = 125829120 / 8000 = 15728.64 = 15729 packets
+NumPacketsY = 2211840 / 8000 = 276.48 = 277 packets
+TotalNumPackets = 15729 + 277 = 16006 packets
+Total Packet Size = Payload + Header = 1024 B = 8192 bits/packet
+Total # of packets when FileY finishes = 277 * 2 = 554 packets
+
+Tx = (8192 * 16006) / 27900000 bps = 4.6996828673835125448028673835125 s
+Ty = (8192 * 554) / 27900000 bps = 0.16266551971326164874551971326165 s
+
+______________________________________________________
