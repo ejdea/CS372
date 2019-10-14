@@ -1,0 +1,244 @@
+A--1--2--3--B
+
+R = 8.4 Mbps = 8400000
+L = 3 KiB = 3072 B = 24576 bits
+d = 160 km = 160000 m
+s = 2.7 x 10^8 m/s = 270000000 m/s
+
+d_trans	= L/R	= 24576 bits/8400000 bps = 0.00292571428571428571428571428571 s = 2.92571428571428571428571428571 ms
+d_prop	= d/s	= 160000 m / 270000000 m/s = 5.9259259259259259259259259259259e-4 s = 0.000592592 s = 0.59259259259259259259259259259259 ms
+
+(3+1) * 2.92571428571428571428571428571 + 0.59259259259259259259259259259259 = 12.295449735449735449735449735433 = 12.3 ms
+_____________________________
+
+R = 1.7 Mbps = 1700000 bps
+L = 2 KiB = 16384 bits
+d = 184.7 km = 184700 m
+s = 2.7 * 10^8 m/s = 270000000 m/s
+
+d_trans = L/R	= 16384/1700000 = 0.00963764705882352941176470588235 s = 9.6376470588235294117647058823529 ms
+d_prop 	= d/s 	= 184700/270000000 = 6.8407407407407407407407407407407e-4 s = 0.68407407407407407407407407407407 ms
+
+A--1--2--3--4--5--B
+
+5 * ( 9.6376470588235294117647058823529 ) + 0.68407407407407407407407407407407 = 48.872309368191721132897603485839
+
+_____________________________
+
+A--1--2--3--4--B
+
+R = 2.6 Mbps = 2600000 bps
+L = 3 KiB = 24576 bits
+d = 157.9 km = 157900 m
+s = 2.7 * 10^8 m/s = 270000000 m/s
+
+L/R	= 9.4523076923076923076923076923077 ms
+d/s	= 0.58481481481481481481481481481481 ms
+
+(4+1) * 9.4523076923076923076923076923077 + 0.58481481481481481481481481481481 = 47.846353276353276353276353276353
+
+_____________________________
+
+R = 2.5 Mbps = 2500000 bps
+L = 2 KiB = 16384 bits
+d = 181.6 km = 181600 m
+s = 2.7 * 10^8 m/s = 270000000 m/s
+
+d_trans = L/R	= 16384/2500000 = 6.5536 ms
+d_prop 	= d/s 	= 181600/270000000 = 0.67259259259259259259259259259259 ms
+
+(5+1)*6.5536 + 0.67 = 39.3216 + 0.67 = 39.994192592592592592592592592593 ms = 40 ms
+
+
+************************************************************
+#22
+
+L = 8 MiB = 67108864 bits
+R = 47.1 Gbps = 4.71 * 10^10 = 47100000000 bps
+47100000000/7 users = 6728571428.5714285714285714285714 bps
+linksetup = 54.8
+
+d_trans = L/R = 67108864 / 6728571428.5714285714285714285714 = 9.973716518046709129511677282378 ms
+
+9.973716518046709129511677282378 + 54.8 = 64.773716518046709129511677282378 ms
+_____________________________
+
+L = 4 MiB = 33554432 bits
+R = 77.3 Gbps/13 = 5946153846.1538461538461538461538 bps/user
+77.1 ms
+_____________________________
+
+L = 7 MiB = 58720256 bits
+R = 75.5 Gbps = 75500000000 bits
+75500000000/9 = 8388888888.8888888888888888888889 bps
+link_setup = 63.3
+
+58720256 / 8388888888.8888888888888888888889 = 6.9997656158940397350993377483444 = 7 ms
+
+63.3 + 7 = 70.3 ms
+
+_____________________________
+
+L = 7 MiB = 58720256 bits
+R = 54.8 Gbps = 54800000000 / 11 = 4981818181.8181818181818181818182 bps
+link_setup = 63 ms
+
+L/R = 58720256 / 4981818181.8181818181818181818182 = 11.786912700729927007299270072993
+
+63 + 11.786912700729927007299270072993 = 74.786912700729927007299270072993
+
+************************************************************
+#23
+
+L = 7 MiB = 58720256 bits
+N = 69
+R = 1.7 Gbps = 1700000000 bps
+
+average queuing delay = L(N-1)/(2R) = 58720256 (69-1) / (2*1700000000) = 3992977408 / 3400000000 = 1.17440512 s = 
+
+1174.40512 ms
+
+2L/R = 2 * 58720256 / 1700000000 = 0.06908265411764705882352941176471 s = 69.082654117647058823529411764706 ms
+________________
+
+
+************************************************************
+#24
+
+analog-digital = 38 Kbps = 38000 bps
+R = 1.4 Mbps = 1400000 bps
+L = 79 B = 632 bits
+d = 843.2 km = 843200 m
+s = 2.5 * 10^8 = 250000000 m/s
+store-and-forward
+
+d_convert = L/R = 632 / 38000 = 16.631578947368421052631578947368 ms
+d_trans	= L/R = 632 / 1400000 = 0.45142857142857142857142857142857 ms
+d_prop	= d/s = 843200 / 250000000 = 3.3728 ms
+
+d_nodal = d_convert + d_trans + d_prop = 16.631578947368421052631578947368 + 0.45142857142857142857142857142857  + 3.3728 = 20.455807518796992481203007518797 ms = 20.46 ms
+
+______________________________
+
+analog-digital = 52 Kbps = 52000 bps
+R = 3.9 Mbps = 3900000 bps
+L = 89 B = 712 bits
+d = 759 km = 759000 m
+s = 2.5 * 10^8 = 250000000 m/s
+store-and-forward
+
+d_convert = L/R = 712/52000 = 13.692307692307692307692307692308 ms
+d_trans	= L/R = 712/3900000 = 0.1825641025641025641025641025641 ms
+d_prop	= d/s = 759000 / 250000000 = 3.036 ms
+
+d_nodal = d_convert + d_trans + d_prop = 
+
+************************************************************
+#25
+
+1/5=0.2
+(3*0.61*0.2) + (2*0.11*0.2) = 0.41 = 41%
+
+1/5=0.2
+(3*0.94*0.2) + (2*0.37*0.2) = 0.712 = 71.2%
+
+
+
+#26
+1/5=0.2
+(2*0.69*0.2) + (2*0.59*0.2) + (1*0.03*0.2) = 0.518 = 51.8%
+
+###############################################
+
+#21
+Suppose there are 2 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 9 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 128.2 km
+
+The speed of propagation through the transmission medium is is 2.7 x 108 m/s
+
+The packet size is 3 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+A--1--2--B
+
+R = 9 Mbps = 9000000 bps
+L = 3 KiB = 3072 B = 24576 bits
+d = 128.2 km = 128200 m
+s = 2.7 x 10^8 m/s = 270000000 m/s
+
+d_trans	= L/R	= 24576 bits / 9000000 bps = 2.7306666666666666666666666666667 ms
+d_prop	= d/s	= 128200 m / 270000000 m/s = 0.47481481481481481481481481481481 ms
+
+(2+1) * 2.7306666666666666666666666666667 + 0.47481481481481481481481481481481 = 8.6668148148148148148148148148149 ms
+8.192 + 0.47481481481481481481481481481481
+
+################################################
+
+#22
+Suppose there are 94 packets entering a queue at the same time. Each packet is of size 2 MiB. The link transmission rate is 1.7 Gbps. What is the queueing delay of packet number 8 (in milliseconds, rounded to one decimal place, e.g. 0.01234 seconds would be entered as "12.3")
+
+L = 2 MiB = 2*1024 * 1024 * 8 = 16777216 bits
+R = 1.7 Gbps = 1700000000 bps
+
+(N-1)L/R = (8-1) * 16777216 / 1700000000 = 0.06908265411764705882352941176471 s = 69.082654117647058823529411764706 ms
+
+################################################
+
+#23
+How long does it take to send a 19 MiB file from Host A to Host B over a circuit-switched network, assuming:
+
+Total link transmission rate = 37.2 Gbps.
+Network is TDM, with 9 permitted users, each with an equal time slot size.
+A link connection requires a setup time of 79.9 ms.
+Your answer should be in miliseconds (ms) with one decimal place, and without the unit (e.g. "140.6" without the quotes)
+
+
+L = 19 MiB = 19 * 1024 * 1024 * 8 = 159383552 bits
+R = 37.2 Gbps = 37200000000 bps
+R/9 = 4133333333.3333333333333333333333 bps/user
+link_setup = 79.9 ms
+
+L/R = 159383552 / 4133333333.3333333333333333333333 + 79.9 = 
+38.560536774193548387096774193549 + 79.9 = 118.46053677419354838709677419355 ms
+
+################################################
+#24
+
+What is the total utilization of a circuit-switched network, accommodating five users with equal bandwidth share, and the following properties:
+
+Three users each using 54% of their bandwidth share
+Two users each using 31% of their bandwidth share
+Give answer in percent, with one decimal place (normal rounding) and no percentage sign (e.g. for 49.15% you would enter "49.2" without the quotes).
+
+1/5=0.2
+
+(3*0.54*0.2) + (2*0.31*0.2) = 0.448 = 44.8%
+
+################################################
+
+#25
+
+analog-digital = 44 Kbps = 44000 bps
+R = 3 Mbps = 3000000 bps
+L = 62 B = 496 bits
+d = 699.8 km = 699800 m
+s = 2.5 * 10^8 = 250000000 m/s
+store-and-forward
+
+d_convert = L/R = 496 / 44000 = 11.272727272727272727272727272727 ms
+d_trans	= L/R = 496 / 3000000 = 0.16533333333333333333333333333333 ms
+d_prop	= d/s = 699800 / 250000000 = 2.7992 ms
+
+d_nodal = d_convert + d_trans + d_prop = 14.23726060606060606060606060606 ms
+
+###############################################
+
+#26
+
+1/5 = 0.2
+
+(2*0.91*0.2) + (2*0.42*0.2) + (1*0.39*0.2) = 0.61 = 61%

@@ -87,4 +87,66 @@ Total # of packets when FileY finishes = 277 * 2 = 554 packets
 Tx = (8192 * 16006) / 27900000 bps = 4.6996828673835125448028673835125 s
 Ty = (8192 * 554) / 27900000 bps = 0.16266551971326164874551971326165 s
 
+******************************************************
+ATTEMPT 2
+******************************************************
+
+#4
+
+Suppose there are 4 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 9.4 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 123.4 km
+
+The speed of propagation through the transmission medium is is 2.7 x 10^8 m/s
+
+The packet size is 2 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+A--1--2--3--4--B
+
+L = 2 KiB = 2 * 1024 * 8 = 16384 bits
+R = 9.4 Mbps = 9400000 bps
+d = 123.4 km = 123400 m
+s = 2.7 * 10^8 = 270000000 m/s
+
+T_trans = L/R = 16384 / 9400000 = 0.00174297872340425531914893617021 s = 1.7429787234042553191489361702128 ms
+T_prop = d/s = 123400 / 270000000 = 4.5703703703703703703703703703704e-4 s = 0.45703703703703703703703703703704 ms
+
+(4+1) * 1.7429787234042553191489361702128 + 0.45703703703703703703703703703704 = 10.914909377462568951930654058314 ms
 ______________________________________________________
+
+#5
+
+Given a link with a maximum transmission rate of 57.6 Mbps. Only two computers, X and Y, wish to transmit starting at time t = 0 seconds. Computer X sends fileX (5 MiB) and computer Y sends fileY (90 KiB), both starting at time t = 0.
+
+Statistical multiplexing is used, with details as follows
+Packet Payload Size = 1000 Bytes
+Packet Header Size = 24 Bytes (overhead)
+Ignore Processing and Queueing delays
+Assume partial packets (packets consisting of less than 1000 Bytes of data) are padded so that they are the same size as full packets.
+Assume continuous alternating-packet transmission.
+Computer X gets the transmission medium first.
+At what time (t = ?) would FileX finish transmitting?
+
+Give answer in seconds, without units, and round to two decimal places (e.g. for an answer of 12.4567 seconds you would enter "12.46" without the quotes)
+
+Lx = 5 MiB = 5 * 1024 * 1024 * 8 = 41943040 bits
+Ly = 90 KiB = 90 * 1024 * 8 = 737280 bits
+R = 57.6 Mbps = 57600000 bps
+TotalPayload = 1000 bytes = 8000 bits
+TotalPacketSize = 1000 + 24 = 1024 bytes = 8192 bits
+
+NumPacketsX = 41943040 / 8000 = 5242.88 = 5243 packets
+NumPacketsY = 737280 / 8000 = 92.16 = 93 packets
+TotalPackets = 5243 + 93 = 5336 packets
+Total # of packets when FileY finishes = 93 * 2 = 186 packets
+
+Tx = (8192 * 5336) / 57600000 bps = 0.75889777777777777777777777777778 s
+Ty = (8192 * 186) / 57600000 bps = 0.02645333333333333333333333333333 s
+
+
+______________________________________________________
+
