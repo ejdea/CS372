@@ -1,0 +1,106 @@
+#22
+
+Suppose there are 79 packets entering a queue at the same time. Each packet is of size 7 MiB. The link transmission rate is 1.3 Gbps. What is the queueing delay of packet number 44 (in milliseconds, rounded to one decimal place, e.g. 0.01234 seconds would be entered as "12.3")
+
+L = 7 MiB = 7 * 1024 * 1024 * 8 = 58720256 bps
+R = 1.3 Gbps = 1300000000 bps
+
+(N-1)L/R = (44 - 1) * 58720256 / 1300000000 = 1.9422853907692307692307692307692 s = 1942.2853907692307692307692307692 ms = 1942.3 ms
+
+____________________________________
+
+#23
+
+Suppose there are 5 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 4.4 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 177.7 km
+
+The speed of propagation through the transmission medium is is 2.7 x 10^8 m/s
+
+The packet size is 3 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+A--1--2--3--4--5--B
+
+L = 3 KiB = 3 * 1024 * 8 = 24576 bits
+R = 4.4 Mbps = 4400000 bps
+d = 177.7 km = 177700 m
+s = 2.7 x 10^8 m/s = 270000000 m/s
+
+L/R = 5.5854545454545454545454545454545 ms
+d/s = 0.65814814814814814814814814814815 ms
+
+6 * L/R + d/s = 6 * 24576 / 4400000 + 177700 / 270000000 = 0.03351272727272727272727272727273 + 6.5814814814814814814814814814815e-4 = 33.51272727272727272727272727273 + 0.65814814814814814814814814814815 = 34.170875420875420875420875420878 ms = 34.2 ms
+
+____________________________________
+
+#24
+
+Given a transmission medium with propagation rate of 2.5x10^8 m/sec. Multiple computers share this link using packet switching.
+
+Assume that queuing is necessary only for transmission. (i.e. ignore processing delay for all packets.)  
+Assume that there is no other traffic on the medium, no switches between the link and the destination
+At least 20 packets arrive in the queue at time t = 0.
+Each packet's size is 1000 bytes.
+The distance to the destination is 1500 km.
+Answer the following questions for each of the given transmission rates.  Give answers in milliseconds, without units, rounding to two decimal places, for credit. (e.g. for 0.000302 seconds you would enter "0.30" without the quotes)
+
+p = 20 packets
+L = 1000 bytes * 8 = 8000 bits
+R1 = 10 Mbps  = 10000000 bps
+R2 = 100 Mbps = 100000000 bps
+d = 1500 km = 1500000 m/s
+s = 2.5x10^8 m/s = 250000000 m/s
+
+T_trans = L/R = 0.0008 s = 0.8 ms
+T_prop = d/s = 0.006 s = 6 ms
+T_queue4 = (N-1)L/R = 3 * L / R = 3 * 8000 / 10000000 = 0.0024 s = 2.4 ms
+T_e2e5 = L/R + d/s = 8000 / 10000000 + 1500000 / 250000000 = 0.0008 + 0.006 = 0.0068 s = 6.8 ms
+T_avg10 = L(N-1) / (2R) = 8000 * (10-1) / (2 * 10000000) = 0.0036 s = 3.6 ms
+
+T_trans = L/R = 0.00008 s = 0.08 ms
+T_prop = d/s = 0.006 s = 6 ms
+T_queue4 = (N-1)L/R = 3 * L / R = 3 * 8000 / 100000000 = 0.00024 s = 0.24 ms
+T_e2e5 = L/R + d/s = 8000 / 100000000 + 1500000 / 250000000 = 0.00008 + 0.006 = 0.00608 s = 6.08 ms
+T_avg10 = L(N-1) / (2R) = 8000 * (10-1) / (2 * 100000000) = 0.00036 s = 0.36 ms
+
+____________________________________
+
+#25 
+
+Given a link with a maximum transmission rate of 33.7 Mbps. Only two computers, X and Y, wish to transmit starting at time t = 0 seconds. Computer X sends fileX (11 MiB) and computer Y sends fileY (16 KiB), both starting at time t = 0.
+
+Computer X gets the transmission medium first, so Computer Y must wait.
+For the following calculations, assume maximum transmission rate during transmission.
+Suppose that entire files are sent as a stream (no packets, no multiplexing).
+
+At what time (t = ?) would FileX finish transmitting?
+
+Give answer in seconds, without units, and round to two decimal places (e.g. for an answer of 12.4567 seconds you would enter "12.46" without the quotes)
+
+R = 33.7 Mbps = 33700000 bps
+Lx = 11 MiB = 11 * 1024 * 1024 * 8 = 92274688 bits
+Ly = 16 KiB = 16 * 1024 * 8 = 131072 bits
+
+Lx/R = 92274688 / 33700000 = 2.7381213056379821958456973293769 s = 2738.1213056379821958456973293769 ms
+Ly/R = 131072 / 33700000 = 0.00388937685459940652818991097923 s = 3.8893768545994065281899109792285 ms
+
+2.7381213056379821958456973293769 + 0.00388937685459940652818991097923 = 2.7420106824925816023738872403561 s = 2.74 s
+____________________________________
+
+#26
+
+A client in a network with a proxy server requests a 10 MiB file from an internet server, fakeservername.com. The network’s proxy server has a 3.96 Mbps connection to fakeservername.com. The average response time between the network’s proxy server and the internet origin server (including RTT) is 1.5 seconds for a small “header-only” HTTP request/response. The file requested by the client is currently in the proxy server cache, but the proxy server relays the client’s request to the internet server with “if-modified since”.
+
+Assume that transmissions between the proxy and the origin servers are stream (not packets) at full bandwidth, with negligible propagation delay.
+
+How much time is saved if the file has not been modified? (Give answer in seconds, without units, rounded to two decimal places, so for an answer of 1.4233 seconds you would enter "1.42" without the quotes.)
+
+L = 10 MiB = 10 * 1024 * 1024 * 8 = 83886080 bits
+R = 3.96 Mbps = 3.96 * 1000000 = 3960000 bps
+RTT = 1.5 s
+
+L/R + RTT = 83886080 / 3960000 = 21.183353535353535353535353535354 s = 21.18 s

@@ -1,0 +1,87 @@
+00-conn_init
+00-conn_accept
+01-req conn
+02-req index
+03-req conn
+04-request img1
+05-req conn
+06-request img2
+07-req conn
+08-request img3
+09-req conn
+10-request img4
+11-req conn
+12-request img5
+13-req conn
+14-request img6
+
+00-conn_init
+00-conn_ack
+01-req conn
+02-req index
+03-req img1
+04-req img2
+05-req img3
+06-req img4
+07-req img5
+08-req img6
+
+___________________________________
+
+#23
+
+A client in a network with a proxy server requests a 7 MiB file from an internet server, fakeservername.com. The network’s proxy server has a 2.11 Mbps connection to fakeservername.com. The average response time between the network’s proxy server and the internet origin server (including RTT) is 1.5 seconds for a small “header-only” HTTP request/response. The file requested by the client is currently in the proxy server cache, but the proxy server relays the client’s request to the internet server with “if-modified since”.
+
+Assume that transmissions between the proxy and the origin servers are stream (not packets) at full bandwidth, with negligible propagation delay.
+
+How much time is saved if the file has not been modified? (Give answer in seconds, without units, rounded to two decimal places, so for an answer of 1.4233 seconds you would enter "1.42" without the quotes.)
+
+L = 7 MiB = 7 * 1024 * 1024 * 8 = 58720256 bits
+R = 2.11 Mbps = 2110000 bps
+t = 1.5 s
+
+L/R = 58720256 / 2110000 = 27.829505213270142180094786729858 s
+
+___________________________________
+
+#24
+
+A client’s browser sends an HTTP request to a website. The website responds with a handshake and sets up a TCP connection. The connection setup takes 5.4 ms, including the RTT. The browser then sends the request for the website’s index file. The index file references 2 additional images, which are to be requested/downloaded by the client’s browser.
+
+Assuming all other conditions are equal, how much longer would non-persistent HTTP take than persistent HTTP? (Give answer in milliseconds, without units, rounded to one decimal place. For an answer of 0.01005 seconds, you would enter "10.1" without the quotes.)
+
+time = 5.4 ms
+
+non-persistent = 6 requests
+persistent = 4 requests
+
+(6-4) * 5.4 = 10.8 ms
+
+___________________________________
+
+#23 Attempt 2
+
+A client in a network with a proxy server requests a 7 MiB file from an internet server, fakeservername.com. The network’s proxy server has a 2.12 Mbps connection to fakeservername.com. The average response time between the network’s proxy server and the internet origin server (including RTT) is 5.4 seconds for a small “header-only” HTTP request/response. The file requested by the client is currently in the proxy server cache, but the proxy server relays the client’s request to the internet server with “if-modified since”.
+
+Assume that transmissions between the proxy and the origin servers are stream (not packets) at full bandwidth, with negligible propagation delay.
+
+How much time is saved if the file has not been modified? (Give answer in seconds, without units, rounded to two decimal places, so for an answer of 1.4233 seconds you would enter "1.42" without the quotes.)
+
+L = 7 MiB = 7 * 1024 * 1024 * 8 = 58720256
+R = 2.12 mbps = 2120000 bps
+
+L/R = 58720256 / 2120000 = 27.698233962264150943396226415094 s = 27.70 s
+
+___________________________________
+
+#24 Attempt 2
+
+A client’s browser sends an HTTP request to a website. The website responds with a handshake and sets up a TCP connection. The connection setup takes 9.4 ms, including the RTT. The browser then sends the request for the website’s index file. The index file references 27 additional images, which are to be requested/downloaded by the client’s browser.
+
+Assuming all other conditions are equal, how much longer would non-persistent HTTP take than persistent HTTP? (Give answer in milliseconds, without units, rounded to one decimal place. For an answer of 0.01005 seconds, you would enter "10.1" without the quotes.)
+
+conn_time = 9.4 ms
+non-persistent = 56 requests
+persistent = 29 requests
+
+(56 - 29) * 9.4 = 253.8 ms

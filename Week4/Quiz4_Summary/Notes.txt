@@ -1,0 +1,80 @@
+#6
+
+Compute the sum with carry-wraparound (sometimes called the one's complement sum) of the following two numbers.  Give answer in 8-bit binary, zero-padded to 8 bits if necessary, with no spaces (e.g. 00101000). Please note this is different than the checksum calculation.
+NOTE: Canvas will remove any leading zeros from your answer. This will not cause your answer to be marked as incorrect.
+
+ 10010110
+ 10011100
+ --------
+100110010
+ 00110011 (1's complement sum)
+ 
+10010110
+10011100
+100110010
+00110011 (1's complement)
+
+**************
+
+  01010011
+  01100110
+= 10111001
+  01110100
+=100101101
+  00101110
+  11010001 (1's complement sum)
+
+**************
+
+  00000001
+  11111111
+=100000000
+ 000000001
+ 111111110 (1's complement)
+ 
+  10000001
+  10000001
+=100000010
+  00000011
+  
+________________________________________
+
+#7
+
+Compute the sum with carry-wraparound (sometimes called the one's complement sum) of the following two numbers.  Give answer in 8-bit binary, zero-padded to 8 bits if necessary, with no spaces (e.g. 00101000). Please note this is different than the checksum calculation.
+NOTE: Canvas will remove any leading zeros from your answer. This will not cause your answer to be marked as incorrect.
+
+  10000011
+  10000000
+=100000011
+  00000100 (8-bit sum)
+
+ 10000011
+ 10000000
+100000011
+ 00000100
+________________________________________
+
+ 00000001
+ 11111111
+100000000
+ 00000001
+ 
+ 10010110
+ 10011100
+100110010
+ 00110011
+ 
+ 10000011
+ 10000000
+100000011
+ 00000100
+ 
+________________________________________
+ 
+#6
+
+10010110
+10010000
+
+ 
