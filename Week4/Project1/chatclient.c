@@ -40,8 +40,8 @@
 /* Debug print macros */
 #if DEBUG
 #define DBG_PRINT(format, arg) printf(format, arg);
-#define DBG_PRINT2(format, arg1, agr2) printf(format, arg1, arg2);
-#define DBG_PRINT3(format, arg1, agr2, arg3) printf(format, arg1, arg2, arg3);
+#define DBG_PRINT2(format, arg1, arg2) printf(format, arg1, arg2);
+#define DBG_PRINT3(format, arg1, arg2, arg3) printf(format, arg1, arg2, arg3);
 #else
 #define DBG_PRINT(format, arg)
 #define DBG_PRINT2(format, arg1, arg2)
@@ -64,7 +64,8 @@ void error(const char *msg)
 * Name:		sendData
 * Arguments:	socket file descriptor, data
 * Return:	Exit Code
-* Description:	Entry point for otp_enc
+* Description:	Transmits data over the socket to the target host
+* References:	This function was previously developed in CS344
 ******************************************************************************/
 int sendData(int socketFD, char data[MAX_BUFFER_SIZE])
 {
@@ -100,7 +101,8 @@ int sendData(int socketFD, char data[MAX_BUFFER_SIZE])
 * Arguments:	[in] socket file descriptor
 *		[out] buffer
 * Return:	charsRead
-* Description:	Receives data from the server
+* Description:	Receives data from the target host
+* References:	This function was previously developed in CS344
 ******************************************************************************/
 int receiveData(int socketFD, char *buffer, int bufferSize)
 {
@@ -147,9 +149,9 @@ int main(int argc, char *argv[])
 	struct sockaddr_in serverAddress;
 	struct hostent* serverHostInfo;
 	char buffer[MAX_BUFFER_SIZE];
+	char msg[MAX_BUFFER_SIZE];
 	char *conn_buff;
 	char *hostName = NULL;
-	char *tmp;
 	char username[MAX_BUFFER_SIZE];
 	char svr_username[MAX_BUFFER_SIZE];
 
@@ -221,7 +223,7 @@ int main(int argc, char *argv[])
 		error("chatclient: error: connecting");
 
 	/* Send connection request to server */
-	strcpy(buffer, "chatclient: connection request.");
+	strcpy(buffer, "chatclient: connection request[]");
 	strcat(buffer, username);
 	sendData(socketFD, buffer);
 
@@ -229,9 +231,8 @@ int main(int argc, char *argv[])
 	receiveData(socketFD, buffer, sizeof(buffer));
 
 	/* Parse received data */
-	conn_buff = strtok(buffer, ".");
-	tmp = strtok(NULL, ".");
-	strcpy(svr_username, tmp);
+	conn_buff = strtok(buffer, "[]");
+	strcpy(svr_username, strtok(NULL, "[]"));
 
 	/* If connection was successful */
 	if (strcmp(conn_buff, "chatserve: connection success") == 0)
@@ -239,9 +240,7 @@ int main(int argc, char *argv[])
 		while (chat_status)
 		{
 			/* Get input message from user */
-			strcpy(buffer, username);
-			strcat(buffer, "> ");
-			printf("%s", buffer);
+			printf("%s> ", username);
 	
 			/* Get input from the user, truncate to buffer - 1 chars, leaving \0 */
 			fgets(buffer, MAX_BUFFER_SIZE, stdin);
@@ -249,11 +248,18 @@ int main(int argc, char *argv[])
 			/* Remove newline from input */
 			buffer[strcspn(buffer, "\n")] = 0;
 
+			/* Extract msg */
+			strcpy(msg, buffer);
+
+			/* Append delimter and username to buffer */
+			strcat(buffer, "[]");
+			strcat(buffer, username);
+
 			/* Send message to server. */
 			sendData(socketFD, buffer);
 
 			/* If server entered \quit, then exit */
-			if (strcmp(buffer, "\\quit") == 0)
+			if (strcmp(msg, "\\quit") == 0)
 			{
 				chat_status = 0;
 				break;
@@ -263,11 +269,15 @@ int main(int argc, char *argv[])
 				/* Wait to receive data from server. */
 				receiveData(socketFD, buffer, sizeof(buffer));
 
+				/* Parse data received */
+				strcpy(msg, strtok(buffer, "[]"));
+				strcpy(svr_username, strtok(NULL, "[]"));
+
 				/* Display msg received */
-				printf("%s> %s\n", svr_username, buffer);
+				printf("%s> %s\n", svr_username, msg);
 
 				/* If server entered \quit, then exit */
-				if (strcmp(buffer, "\\quit") == 0)
+				if (strcmp(msg, "\\quit") == 0)
 					chat_status = 0;
 			}
 		}
