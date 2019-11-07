@@ -1,10 +1,8 @@
 ###############################################################################
-# Author:	 		Edmund Dea (deae@oregonstate.edu)
-# Student ID:		933280343
-# Last Modified:	10/28/2019
-# Course:			CS372
-# Title:			makefile
-# Description:		Builds chatclient
+# Author:      Edmund Dea (deae@oregonstate.edu)
+# Student ID:  933280343
+# Date:        10/27/2019
+# Title:       CS372 Project 1 makefile
 ###############################################################################
 
 # Compiler

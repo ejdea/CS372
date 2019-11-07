@@ -1,0 +1,253 @@
+#1 
+
+Compute the sum with carry-wraparound (sometimes called the one's complement sum) of the following two numbers.  Give answer in 8-bit binary, zero-padded to 8 bits if necessary, with no spaces (e.g. 00101000). Please note this is different than the checksum calculation.
+NOTE: Canvas will remove any leading zeros from your answer. This will not cause your answer to be marked as incorrect.
+
+ 10000010
+ 10000001
+100000011
+ 00000100
+________________________________________
+
+#7
+
+Server X is running XBox Live services on port #3072. Client A is running an application that uses port #1796 to request an XBox Live TCP connection to Server X. Client B is running an application that uses port #2076 to request an XBox Live TCP connection to Server X.
+
+IP addresses:
+
+Server X: 201.164.10.123
+Client A: 128.193.11.113
+Client B: 128.193.45.227
+The connection created for Client A is identified by the sockets at the endpoints as follows:
+
+________________________________________
+
+#18
+
+HostA has established a TCP connection with HostB in a remote network. HostA is sending segments to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #1,134. HostA now sends segments of the same application data stream in order:
+
+P: 346 bytes
+Q: 145 bytes
+R: 499 bytes
+
+What is the sequence number on segment R?
+
+1135 + 346 + 145 = 1626
+
+________________________________________
+
+#19
+
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #3,564. HostA now sends segments of the same application data stream in order:
+
+P: 283 bytes
+Q: 458 bytes
+R: 386 bytes
+
+Suppose the segments arrive at Host B in the order Q, P, and R. What is the acknowledgment number on the segment sent in response to segment P?
+
+3565 + 458 + 283 = 4306
+
+________________________________________
+
+#20
+
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #4,038. HostA now sends segments of the same application data stream in order:
+
+P: 356 bytes
+Q: 242 bytes
+R: 387 bytes
+
+Suppose segments P, Q, and R arrive at Host B in order. What is the acknowledgment number on the segment sent in response to segment Q?
+
+4039 + 356 + 242 = 4637
+
+________________________________________
+
+#21
+
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #4,215. HostA now sends segments of the same application data stream in order:
+
+P: 289 bytes
+Q: 225 bytes
+R: 312 bytes
+
+Suppose the segments arrive at Host B in the order Q, P, and R. What is the acknowledgment number on the segment sent in response to segment Q?
+
+4216 + 225 = 4441
+
+________________________________________
+
+#22
+
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #1,648. HostA now sends segments of the same application data stream in order:
+
+P: 230 bytes
+Q: 220 bytes
+R: 385 bytes
+
+Suppose the segments arrive at Host B in the order Q, P, and R. What is the acknowledgment number on the segment sent in response to segment R?
+
+1649 + 220 + 230 + 385 = 2484
+
+________________________________________
+
+#23
+
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #2,175. HostA now sends segments of the same application data stream in order:
+
+P: 237 bytes
+Q: 175 bytes
+R: 394 bytes
+
+What is the sequence number on segment P?
+
+2176
+
+________________________________________
+
+#24
+
+Assume a TCP sender is continuously sending 1,250-byte segment. If a TCP receiver advertises a window size of 7,251 bytes, and with a link transmission rate 45 Mbps an end-to-end propagation delay of 39.3 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+7251 / 1250 = 5.8008 segments = 5 segments
+L = 1250 bytes = 1250 * 8 = 10000 bits
+R = 45 Mbps = 45000000 bps = 45000 bpms (bits per ms)
+t_prop = 39.3 ms
+
+t_trans = L/R = 10000 bits / 45000 bpms = 0.22222222222222222222222222222222 ms
+RTT = t_prop * 2 = 39.3 * 2 = 78.6 ms
+delay per packet = RTT + t_trans = 78.6 + 0.22222222222222222222222222222222 = 78.822222222222222222222222222222 ms
+utilization = (segments * t_trans)/(delay per packet) = 5 * 0.22222222222222222222222222222222 / 78.822222222222222222222222222222 = 0.01409641950944460107132788271779 * 100 = 1.409641950944460107132788271779 % = 1.41%
+
+________________________________________
+
+SC_Lecture18_sol
+#6
+
+NumSegments = 12000 / 1200 = 10 segments
+L = 1200 bytes = 1200 * 8 = 9600 bits
+R = 100 Mbps = 100000 bpms (bit per ms)
+t_prop = 1ms
+RTT = t_prop * 2 = 1 * 2 = 2ms
+
+t_trans = L/R = 9600 / 100000 = 0.096 ms
+delay per packet = RTT + t_trans = 2 + 0.096 = 2.096 ms
+utilization = NumSegments * t_trans / delay per packet = 10 * 0.096 / 2.096 = 0.45801526717557251908396946564885 * 100 = 45.8%
+
+________________________________________
+
+#1
+
+Compute the sum with carry-wraparound (sometimes called the one's complement sum) of the following two numbers.  Give answer in 8-bit binary, zero-padded to 8 bits if necessary, with no spaces (e.g. 00101000). Please note this is different than the checksum calculation.
+NOTE: Canvas will remove any leading zeros from your answer. This will not cause your answer to be marked as incorrect.
+
+ 10000001
+ 10000001
+100000010
+ 00000011
+ 
+________________________________________
+
+#18
+
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #2,238. HostA now sends segments of the same application data stream in order:
+
+P: 286 bytes
+Q: 482 bytes
+R: 152 bytes
+
+Suppose the segments arrive at Host B in the order Q, P, and R. What is the acknowledgment number on the segment sent in response to segment Q?
+
+2239
+
+________________________________________
+
+#19
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #2,620. HostA now sends segments of the same application data stream in order:
+
+P: 477 bytes
+Q: 201 bytes
+R: 184 bytes
+
+Suppose segments P, Q, and R arrive at Host B in order. What is the acknowledgment number on the segment sent in response to segment R?
+
+2621 + 477 + 201 + 184 = 3483
+________________________________________
+
+#20
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #4,141. HostA now sends segments of the same application data stream in order:
+
+P: 135 bytes
+Q: 486 bytes
+R: 276 bytes
+
+Suppose segments P, Q, and R arrive at Host B in order. What is the acknowledgment number on the segment sent in response to segment P?
+
+4142 + 135 = 4277
+________________________________________
+
+#21
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #2,813. HostA now sends segments of the same application data stream in order:
+
+P: 471 bytes
+Q: 285 bytes
+R: 229 bytes
+
+Suppose the segments arrive at Host B in the order Q, P, and R. What is the acknowledgment number on the segment sent in response to segment R?
+
+2814 + 471 + 285 + 229 = 3799
+
+________________________________________
+
+#22
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #4,676. HostA now sends segments of the same application data stream in order:
+
+P: 387 bytes
+Q: 260 bytes
+R: 461 bytes
+
+Suppose that segments P, Q, and R are received, but the acknowledgements for segments P and Q are lost. If there are more segments waiting to be transmitted, what is the sequence number of the next segment transmitted after the ACK for segment R is received?
+
+4677
+
+________________________________________
+
+#23
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #1,209. HostA now sends segments of the same application data stream in order:
+
+P: 462 bytes
+Q: 219 bytes
+R: 473 bytes
+
+Suppose the segments arrive at Host B in the order Q, P, and R. What is the acknowledgment number on the segment sent in response to segment P?
+
+
+________________________________________
+
+#24
+Assume a TCP sender is continuously sending 1,244-byte segment. If a TCP receiver advertises a window size of 9,234 bytes, and with a link transmission rate 22 Mbps an end-to-end propagation delay of 13.4 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+segments = 9234 / 1244 = 7.4228295819935691318327974276527 = 7 segments
+L = 1244 bytes = 1244 * 8 = 9952 bits
+R = 22 Mbps = 22000 bpms
+t_prop = 13.4 ms
+
+t_trans = L/R = 9952 / 22000 = 0.45236363636363636363636363636364 ms
+RTT = t_prop * 2 = 13.4 * 2 = 26.8 ms
+delay per packet = RTT + t_trans = 26.8 + 0.45236363636363636363636363636364 = 27.252363636363636363636363636364
+utilization = segments * t_trans / delay per packet = 7 * 0.45236363636363636363636363636364 / 27.252363636363636363636363636364 = 0.11619342442356959863364645602049 = 11.6%
+
+
+
+
+7251 / 1250 = 5.8008 segments = 5 segments
+L = 1250 bytes = 1250 * 8 = 10000 bits
+R = 45 Mbps = 45000000 bps = 45000 bpms (bits per ms)
+t_prop = 39.3 ms
+
+t_trans = L/R = 10000 bits / 45000 bpms = 0.22222222222222222222222222222222 ms
+RTT = t_prop * 2 = 39.3 * 2 = 78.6 ms
+delay per packet = RTT + t_trans = 78.6 + 0.22222222222222222222222222222222 = 78.822222222222222222222222222222 ms
+utilization = (segments * t_trans)/(delay per packet) = 5 * 0.22222222222222222222222222222222 / 78.822222222222222222222222222222 = 0.01409641950944460107132788271779 * 100 = 1.409641950944460107132788271779 % = 1.41%
+

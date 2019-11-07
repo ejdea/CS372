@@ -1,11 +1,11 @@
 /******************************************************************************
-* Author:			Edmund Dea (deae@oregonstate.edu)
-* Student ID:		933280343
-* Last Modified:	10/28/2019
-* Course:			CS372
-* Title:			Project 1: Chat Client
-* Description:		This program acts a chat client that sends and receives 
-*					messages with a chat server using socket programming.
+* Author:	Edmund Dea (deae@oregonstate.edu)
+* Student ID:	933280343
+* Last Modified:		10/28/2019
+* Course:	CS372
+* Title:	Project 1: Chat Client
+* Description:	This program acts a chat client that sends and receives 
+*               messages with a chat server using socket programming.
 ******************************************************************************/
 
 #include <stdio.h>
@@ -20,23 +20,23 @@
 #define DEBUG					0
 
 /* Global macros */
-#define MAX_BUFFER_SIZE			4096
-#define MAX_CHAR_PER_LINE		100
-#define NUM_CONNECTIONS			5
-#define NUM_ASCII_CHAR			27
+#define MAX_BUFFER_SIZE				4096
+#define MAX_CHAR_PER_LINE			100
+#define NUM_CONNECTIONS				5
+#define NUM_ASCII_CHAR				27
 #define INCOMPLETE				0
 #define COMPLETE				1
-#define DEFAULT_HOSTNAME		"localhost"
-#define MAX_USERNAME_LEN		10
+#define DEFAULT_HOSTNAME			"localhost"
+#define MAX_USERNAME_LEN			10
 
 /* Exit codes */
-#define ERROR_NONE					0
+#define ERROR_NONE				0
 #define ERROR_GENERIC				1
-#define ERROR_CONNECTION_REFUSED	2
-#define ERROR_ARGS					3
+#define ERROR_CONNECTION_REFUSED		2
+#define ERROR_ARGS				3
 #define ERROR_FILEIO				4
-#define ERROR_OOM					5
-#define ERROR_SEND					6
+#define ERROR_OOM				5
+#define ERROR_SEND				6
 
 /* Debug print macros */
 #if DEBUG
@@ -50,9 +50,9 @@
 #endif
 
 /******************************************************************************
-* Name:			error
+* Name:		error
 * Arguments:	string
-* Return:		void
+* Return:	void
 * Description:	Error function used for reporting issues
 ******************************************************************************/
 void error(const char *msg)
@@ -62,9 +62,9 @@ void error(const char *msg)
 }
 
 /******************************************************************************
-* Name:			sendData
+* Name:		sendData
 * Arguments:	socket file descriptor, data
-* Return:		Exit Code
+* Return:	Exit Code
 * Description:	Transmits data over the socket to the target host
 * References:	This function was previously developed in CS344
 ******************************************************************************/
@@ -98,10 +98,10 @@ int sendData(int socketFD, char data[MAX_BUFFER_SIZE])
 }
 
 /******************************************************************************
-* Name:			receiveData
+* Name:		receiveData
 * Arguments:	[in] socket file descriptor
-*				[out] buffer
-* Return:		charsRead
+*		[out] buffer
+* Return:	charsRead
 * Description:	Receives data from the target host
 * References:	This function was previously developed in CS344
 ******************************************************************************/
@@ -136,14 +136,15 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 }
 
 /******************************************************************************
-* Name:			initiateContact
-* Arguments:	N/A
-* Return:		Exit Code
-* Description:	Initiates contact with target host
+* Name:		main
+* Arguments:	argc, argv
+* Return:	Exit Code
+* Description:	Entry point for chatclient
 ******************************************************************************/
-int initiateContact(char *hostName, int portNumber, char username[MAX_BUFFER_SIZE])
+int main(int argc, char *argv[])
 {
 	int socketFD = 0;
+	int portNumber = 0;
 	int status = ERROR_NONE;
 	int chat_status = 1;
 	struct sockaddr_in serverAddress;
@@ -151,12 +152,49 @@ int initiateContact(char *hostName, int portNumber, char username[MAX_BUFFER_SIZ
 	char buffer[MAX_BUFFER_SIZE];
 	char msg[MAX_BUFFER_SIZE];
 	char *conn_buff;
+	char *hostName = NULL;
+	char username[MAX_BUFFER_SIZE];
 	char svr_username[MAX_BUFFER_SIZE];
+
+	/* Check usage & args */
+	if (argc != 3)
+	{
+		fprintf(stderr,"usage: %s <hostname> <portNumber>\n", argv[0]);
+		exit(ERROR_ARGS);
+	}
 
 	/* Set up the server address struct */
 	/* Clear variables before use */
 	memset((char*)&serverAddress, '\0', sizeof(serverAddress));
-	
+
+	/* Get host name and port number from command line */
+	if (!argv[1] || !argv[2])
+		exit(ERROR_ARGS);
+	else
+	{
+		hostName = argv[1];
+		portNumber = atoi(argv[2]);
+	}
+
+	/* Prompt user to enter username */
+	memset(username, 0, MAX_BUFFER_SIZE);
+	while (1)
+	{
+		printf("Enter username: ");
+		fgets(username, MAX_BUFFER_SIZE, stdin);
+
+		/* Remove newline from input */
+		username[strcspn(username, "\n")] = 0;
+
+		/* Validate username */
+		if (strlen(username) == 0 || strlen(username) > MAX_USERNAME_LEN)
+			printf("error: username must be between 1 and 10 characters.\n");
+		else
+			break;
+	}
+
+	DBG_PRINT3("hostName = %s, portNumber = %d, username = \"%s\"\n", hostName, portNumber, username);
+
 	/* Create a network-capable socket */
 	serverAddress.sin_family = AF_INET;
 	
@@ -256,60 +294,6 @@ int initiateContact(char *hostName, int portNumber, char username[MAX_BUFFER_SIZ
 
 	/* Close the socket */
 	close(socketFD);
-	
-	return status;
-}
-
-/******************************************************************************
-* Name:			main
-* Arguments:	argc, argv
-* Return:		Exit Code
-* Description:	Entry point for chatclient
-******************************************************************************/
-int main(int argc, char *argv[])
-{
-	char *hostName = NULL;
-	char username[MAX_BUFFER_SIZE];
-	int portNumber = 0;
-	int status = ERROR_NONE;
-
-	/* Check usage & args */
-	if (argc != 3)
-	{
-		fprintf(stderr,"usage: %s <hostname> <portNumber>\n", argv[0]);
-		exit(ERROR_ARGS);
-	}
-
-	/* Get host name and port number from command line */
-	if (!argv[1] || !argv[2])
-		exit(ERROR_ARGS);
-	else
-	{
-		hostName = argv[1];
-		portNumber = atoi(argv[2]);
-	}
-
-	/* Prompt user to enter username */
-	memset(username, 0, MAX_BUFFER_SIZE);
-	while (1)
-	{
-		printf("Enter username: ");
-		fgets(username, MAX_BUFFER_SIZE, stdin);
-
-		/* Remove newline from input */
-		username[strcspn(username, "\n")] = 0;
-
-		/* Validate username */
-		if (strlen(username) == 0 || strlen(username) > MAX_USERNAME_LEN)
-			printf("error: username must be between 1 and 10 characters.\n");
-		else
-			break;
-	}
-
-	DBG_PRINT3("hostName = %s, portNumber = %d, username = \"%s\"\n", hostName, portNumber, username);
-
-	/* Connect to chatserver and initiate chat session */
-	status = initiateContact(hostName, portNumber, username);
 
 	return status;
 }
