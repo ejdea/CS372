@@ -1,0 +1,121 @@
+#6
+
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #2,838. HostA now sends segments of the same application data stream in order:
+
+P: 436 bytes
+Q: 498 bytes
+R: 466 bytes
+
+Suppose segments P, Q, and R arrive at Host B in order. What is the acknowledgment number on the segment sent in response to segment R?
+
+2839 + 436 + 498 + 466 = 4239
+
+______________________________________________
+
+#7
+
+HostA has established a TCP connection with HostB in a remote network. HostA is sending packets to HostB. Assume we have configured TCP, somehow, to ACK every segment (no ACKing every other segment). Assume that the timeout is the same for all packets. HostB’s “window size” is 20000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #1,255. HostA now sends segments of the same application data stream in order:
+
+P: 324 bytes
+Q: 300 bytes
+R: 201 bytes
+
+Suppose the segments arrive at Host B in the order Q, P, and R. What is the acknowledgment number on the segment sent in response to segment R?
+
+1256 + 300 + 324 + 201 = 2081
+______________________________________________
+
+#8
+
+Assume a TCP sender is continuously sending 1,144-byte segment. If a TCP receiver advertises a window size of 8,895 bytes, and with a link transmission rate 40 Mbps an end-to-end propagation delay of 14.4 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+segments = 8895 / 1144 = 7.7753496503496503496503496503497 = 7 segments
+L = 1144 bytes = 1144 * 8 = 9152 bits
+R = 40 Mbps = 40000 bpms
+t_prop = 14.4 ms
+
+t_trans = L/R = 9152 / 40000 = 0.2288 ms
+RTT = t_prop * 2 = 14.4 * 2 = 28.8 ms
+delay per packet = RTT + t_trans = 28.8 + 0.2288 = 29.0288 ms
+utilization = segments * t_trans / delay per packet = 7 * 0.2288 / 29.0288 = 0.05517279391500854323981700931489 * 100 = 5.5%
+
+______________________________________________
+
+#19
+
+A host starts a TCP transmission with an EstimatedRTT of 38.3ms (from the “handshake”). The host then sends 3 packets and records the RTT for each:
+
+SampleRTT1 = 28.9 ms
+
+SampleRTT2 = 16.2 ms
+
+SampleRTT3 = 32.6 ms
+
+(NOTE: SampleRTT1 is the “oldest”; SampleRTT3 is the most recent.)
+
+Using an exponential weighted moving average with a weight of 0.4 given to the most recent sample, what is the EstimatedRTT for packet #4? Give answer in miliseconds, rounded to one decimal place, without units, so for an answer of 0.01146 seconds, you would enter "11.5" without the quotes.
+
+EstimatedRTT = 38.3 ms
+SampleRTT1 = 28.9 ms
+SampleRTT2 = 16.2 ms
+SampleRTT3 = 32.6 ms
+
+EstimatedRTT = (1-a) * EstimatedRTT_(n-1) + a * SampleRTT1
+EstimatedRTT_1 = (1-0.4) * 38.3 + 0.4 * 28.9 = 34.54
+EstimatedRTT_2 = (1-0.4) * 34.54 + 0.4 * 16.2 = 27.204
+EstimatedRTT_3 = (1-0.4) * 27.204 + 0.4 * 32.6 = 29.3624
+
+______________________________________________
+
+#20
+
+Given a 5 Gbps link with TCP applications A, B, and C.
+
+Application A has 48 TCP connections to a remote web server
+Application B has 3 TCP connection to a mail server
+Application C has 3 TCP connections to a remote web server.
+According to TCP "fairness", during times when all connections are transmitting, how much bandwidth should Application C have? (Give answer in Mbps, rounded to one decimal place, without units. So for an answer of 1234,567,890 bps you would enter "1234.6" without the quotes.)
+
+R = 5 Gbps = 5 * 1000 = 5000 Mbps
+n = 48+3+3 = 54 connections
+
+R/n = 5000 / 54 = 92.592592592592592592592592592593 Mbps = 92.6 Mbps/connection
+APP_C_BW = 3 connections * 92.6 = 277.8 Mbps
+
+______________________________________________
+
+#21
+
+Imagine a mythical set of protocols with the following details.
+
+Maximum Link-Layer data frame: 1,117 bytes
+
+Network-Layer header size: 11 bytes
+
+Transport-Layer header size: 7 bytes
+
+What is the size, in bytes, of the MSS? (Give answer without units)
+
+Maximum Segment Size. This is the maximum amount of transport-layer data which can
+be sent, such that it will fit within one link-layer data frame. This ranges from the 500s
+for a dial-up modem to around 1460 for cable internet.
+
+1117 - 11 - 7 = 1099 bytes
+
+______________________________________________
+
+#22
+
+Given a effective delay of 32ms when network usage is 77%, what is the effective delay when network usage = 13% ? (Give answer is miliseconds, rounded to one decimal place, without units. So for an answer of 0.10423 seconds you would enter "104.2" without the quotes).
+
+32ms = D0 / (1-0.77)
+D0 = 32 * (1-0.77) = 7.36
+EffDelay = 7.36 / (1-0.13) = 8.459770114942528735632183908046 ms = 8.5 ms
+
+
+Example
+-------
+33 = D0 / (1-0.16)
+D0 = 33 * (1-0.16) = 27.72 ms
+
+27.72 / (1-0.30) = 39.6
