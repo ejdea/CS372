@@ -1,0 +1,110 @@
+What is the total utilization of a circuit-switched network, accommodating five users with equal bandwidth share, and the following properties:
+
+Three users each using 97% of their bandwidth share
+Two users each using 18% of their bandwidth share
+Give answer in percent, with one decimal place (normal rounding) and no percentage sign (e.g. for 49.15% you would enter "49.2" without the quotes).
+
+BW/user=1/5=0.2
+0.2 * 3 * 0.97 + 0.2 * 2 * 0.18 = 0.654 = 65.4%
+
+___________________________________________
+
+What is the total utilization of a circuit-switched network, accommodating five users with equal bandwidth share, and the following properties:
+
+Two users each using 100% of their bandwidth share
+Two users each using 55% of their bandwidth share
+One user using 3% of their bandwidth share
+Give answer in percent, with one decimal place (normal rounding) and no percentage sign (e.g. for 49.15% you would enter "49.2" without the quotes).
+
+BW/user=1/5=0.2
+0.2 * 2 * 1.0 + 0.2 * 2 * 0.55 + 0.2 * 1 * 0.03 = 0.626 = 62.6%
+___________________________________________
+
+Given a transmission medium with propagation rate of 2.5x10^8 m/sec. Multiple computers share this link using packet switching.
+
+Assume that queuing is necessary only for transmission. (i.e. ignore processing delay for all packets.)  
+Assume that there is no other traffic on the medium, no switches between the link and the destination
+At least 20 packets arrive in the queue at time t = 0.
+Each packet's size is 1500 bytes.
+The distance to the destination is 2000 km.
+Answer the following questions for each of the given transmission rates.  Give answers in milliseconds, without units, rounding to two decimal places, for credit. (e.g. for 0.000302 seconds you would enter "0.30" without the quotes)
+
+p = 20 packets
+L = 1500 bytes = 12000 bits
+R1 = 10 Mbps  = 10000000 bps
+R2 = 100 Mbps = 100000000 bps
+d = 2000 km = 2000000 m
+s = 2.5 * 10^8 m/s = 250000000 m/s
+
+***** 10 Mbps *****
+t_trans = L/R1 = 12000 / 10000000 = 0.0012 s = 1.2 ms
+t_prop = d/s = 2000000 / 250000000 = 0.008 s = 8 ms
+t_queueingdelay3 = (N-1)L/R1 = (3-1) * 12000 / 10000000 = 0.0024 s = 2.4 ms
+t_nodal4 = t_trans + t_prop + t_queueingdelay4 = L/R1 + d/s + (N-1)L/R1 = 12000 / 10000000 + 2000000 / 250000000 + (4-1)12000 / 10000000 = 0.0012 + 0.008 + 0.0036 = 0.0128 s = 12.8 ms
+t_avgqueueingdelay10 = L(N-1)/(2*R1) = 12000(10-1)/(2 * 10000000) = 0.0054 s = 5.4 ms
+
+***** 100 Mbps *****
+t_trans = L/R2 = 12000 / 100000000 = 0.00012 s = 0.12 ms
+t_prop = d/s = 2000000 / 250000000 = 0.008 s = 8 ms
+t_queueingdelay3 = (N-1)L/R2 = (3-1) * 12000 / 100000000 = 0.00024 s = 0.24 ms
+t_nodal4 = t_trans + t_prop + t_queueingdelay4 = L/R2 + d/s + (N-1)L/R2 = 12000 / 100000000 + 2000000 / 250000000 + (4-1)12000 / 100000000 = 0.00012 + 0.008 + 0.00036 = 0.00848 s = 8.48 ms
+t_avgqueueingdelay10 = L(N-1)/(2*R2) = 12000(10-1)/(2 * 100000000) = 0.00054 s = 0.54 ms
+
+________________________________________________
+
+A client’s browser sends an HTTP request to a website. The website responds with a handshake and sets up a TCP connection. The connection setup takes 1.7 ms, including the RTT. The browser then sends the request for the website’s index file. The index file references 14 additional images, which are to be requested/downloaded by the client’s browser.
+
+Assuming all other conditions are equal, how much longer would non-persistent HTTP take than persistent HTTP? (Give answer in milliseconds, without units, rounded to one decimal place. For an answer of 0.01005 seconds, you would enter "10.1" without the quotes.)
+
+t_conn = 1.7 ms
+numImages = 14 images
+numNonpersistentConnectionRequests= 2 * 14 + 2 = 30 connection requests
+numPersistentConnectionRequests = 14 + 2 = 16 connection requests
+DifferenceInNumConnectionsBetweenPersistentVsNonpersistent = 30 - 16 = 14 connection requests
+t_delta = 14 conn_req * 1.7 ms = 23.8 ms
+
+________________________________________________
+
+Assume a TCP sender is continuously sending 1,205-byte segment. If a TCP receiver advertises a window size of 6,930 bytes, and with a link transmission rate 44 Mbps an end-to-end propagation delay of 24.5 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+NumSegments = 6930/1205 = 5.7510373443983402489626556016598 = 5 segments
+L = 1205 bytes = 1205 * 8 bits/byte = 9640 bits
+R = 44 Mbps = 44000000 bps
+t_prop = 24.5 ms
+t_trans = L/R = 9640 / 44000000 = 2.1909090909090909090909090909091e-4 s = 0.21909090909090909090909090909091 ms
+RTT = t_prop * 2 = 24.5 * 2 = 49 ms
+delay per packet = RTT + t_trans = 49 + 0.21909090909090909090909090909091 = 49.219090909090909090909090909091 ms
+utilization = (NumSegments * t_trans) / (delay per packet) = 5 * 0.21909090909090909090909090909091 / 49.219090909090909090909090909091 = 0.02225670009789253984965183502336 * 100 = 2.2256700097892539849651835023365 % = 2.2%
+
+________________________________________________
+
+Hosts A and B have established a TCP connection. Assume that HostB’s advertised window size is at least 8000 bytes. HostB has already received and acknowledged everything sent by HostA’s application up to and including byte #899. Suppose that HostA now sends packets of the same application data stream in order: P (1040 Bytes), Q (1260 Bytes), and R (1180 Bytes). Assume that the timeout is the same for all packets, and that destination host sends an ACK whenever it receives a segment.
+
+For all answers, enter the sequence/ACK number ONLY, in numerical characters (e.g. for Seq# 4003 you would enter "4003" without the quotes).
+
+A. What is the sequence number in packet P as it leaves HostA?
+899+1=900
+
+B.  Suppose that packet P is the first to arrive at HostB, and HostB acknowledges packet P before any other packets are received. What is the acknowledgement number in the ACK?
+899+1+1040=1940
+
+C. What is the sequence number in packet R as it leaves HostA?
+899+1+1040+1260=3200
+
+D. If all three packets arrive in order and packet R is not the final packet in the stream, what is the acknowledgement number in the ACK for packet R?
+899+1+1040+1260+1180=4380
+
+E. Suppose that packet P is lost, but packets Q and R are received. What is the acknowledgement number in the ACK for packet R?
+899+1=900
+
+F. Suppose that packet P is lost, but packets Q and R are received. Packet P times out, and is retransmitted and received. What is the acknowledgement number in the ACK for the retransmitted packet P?
+899+1+1040+1260+1180=4380
+
+G. Suppose that the three packets arrive in order, but the ACKs for packets P and Q are lost. If the ACK for packet R arrives at HostA before packet P times out, what is the sequence number of the next packet sent from HostA?
+899+1+1040+1260+1180=4380
+
+HIJ. Suppose that the three packets arrive out of order : R, then P, then Q. Each packet is acknowledged as soon as it arrives at HostB. What is the acknowledgement number for each packet?
+
+R: 899+1=900
+P: 899+1+1040=1940
+Q: 899+1+1040+1260+1180=4380

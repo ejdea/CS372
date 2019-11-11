@@ -1,0 +1,684 @@
+#21
+
+Given the attached image, and:h
+
+Host A converts analog to digital at a = 53 Kbps
+Link transmission rate R = 3.3 Mbps
+Host A groups data into packets of length L = 113 bytes
+Distance to travel d = 695.4 km
+Propagation speed s = 2.5 x 10^8 m/s
+Host A sends each packet to Host B as soon as it gathers a whole packet.
+Host B converts back from digital to analog as soon as it receives a whole packet.
+How much time elapses from when the first bit starts to be created until the conversion back to analog begins? Give answer in milliseconds (ms) to two decimal places, normal rounding, without units (e.g. 1.5623 ms would be entered as "1.56" without the quotes)
+
+R_conversion = 53 Kbps = 53000 bps
+R_link = 3.3 Mbps = 3300000 bps
+L = 113 bytes = 904 bits
+d = 695.4 km = 695400 m/s
+s = 2.5 * 10^8 m/s = 250000000 m/s
+
+t_conv = L/R_conv = 904/53000 = 0.01705660377358490566037735849057 s = 17.056603773584905660377358490566 ms
+t_trans = L/R_link = 904/3300000 = 0.27393939393939393939393939393939 ms
+t_prop = d/s = 695400/250000000 = 0.0027816 s = 2.7816 ms
+t_nodal = 17.06 + 0.27 + 2.78 = 20.11 ms
+
+_________________________________
+
+#24
+
+How long does it take to send a 7 MiB file from Host A to Host B over a circuit-switched network, assuming:
+
+Total link transmission rate = 74 Gbps.
+Network is TDM, with 19 permitted users, each with an equal time slot size.
+A link connection requires a setup time of 93.7 ms.
+Your answer should be in miliseconds (ms) with one decimal place, and without the unit (e.g. "140.6" without the quotes)
+
+L = 7 MiB = 58720256 bits
+R = 74 Gbps = 74000000000 bps
+R/user = 3894736842.1052631578947368421053 bps/user
+t_linksetup = 93.7 ms
+L/R + t_linksetup = 108.77682248648648648648648648649 ms
+
+_________________________________
+
+#25
+
+Suppose there are 57 packets entering a queue at the same time. Each packet is of size 10 MiB. The link transmission rate is 5 Gbps. What is the queueing delay of packet number 6 (in milliseconds, rounded to one decimal place, e.g. 0.01234 seconds would be entered as "12.3")
+
+packets = 57
+L = 10 MiB = 83886080 bits
+R = 5 Gbps = 5000000000 bps
+queueing_delay = (N-1)L/R = 5 * 83886080/5000000000 = 0.08388608 s = 83.88608 ms
+
+_________________________________
+
+#26
+
+Suppose there are 4 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 8.4 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 107.7 km
+
+The speed of propagation through the transmission medium is is 2.7 x 10^8 m/s
+
+The packet size is 2 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+A--1--2--3--4--B
+L = 2 KiB = 16384 bits
+R = 8.4 Mbps = 8400000 bps
+d = 107.7 km = 107700 m/s
+s = 2.7 * 10^8 m/s = 270000000 m/s
+t_nodal = 5 * L/R + d/s = 10.15126984126984126984126984127 ms = 10.2 ms
+
+_________________________________
+
+          ATTEMPT 2
+_________________________________
+
+#21
+
+Suppose there are 92 packets entering a queue at the same time. Each packet is of size 4 MiB. The link transmission rate is 4.3 Gbps. What is the queueing delay of packet number 14 (in milliseconds, rounded to one decimal place, e.g. 0.01234 seconds would be entered as "12.3")
+
+packets = 92
+L = 4 MiB = 33554432 bits
+R = 4.3 Gbps = 4300000000 bps
+queueing_delay = (N-1)L/R = 0.10144363162790697674418604651163 s = 101.4 ms
+
+_________________________________
+
+Given the attached image, and:h
+
+Host A converts analog to digital at a = 55 Kbps
+Link transmission rate R = 1.4 Mbps
+Host A groups data into packets of length L = 56 bytes
+Distance to travel d = 802.6 km
+Propagation speed s = 2.5 x 10^8 m/s
+Host A sends each packet to Host B as soon as it gathers a whole packet.
+Host B converts back from digital to analog as soon as it receives a whole packet.
+How much time elapses from when the first bit starts to be created until the conversion back to analog begins? Give answer in milliseconds (ms) to two decimal places, normal rounding, without units (e.g. 1.5623 ms would be entered as "1.56" without the quotes)
+
+R_conv = 55 Kbps = 55000 bps
+R_link = 1.4 Mbps = 1400000 bps
+L = 56 bytes = 448 bits
+d = 802.6 km = 802600 m/s
+s = 2.5 * 10^8 = 250000000 m/s
+t_nodal = (448/55000 + 448/1400000) + 802600/250000000 = 11.675854545454545454545454545455 ms = 11.7 ms
+
+_________________________________
+
+#23
+
+Suppose there are 2 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 7.8 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 175.5 km
+
+The speed of propagation through the transmission medium is is 2.7 x 10^8 m/s
+
+The packet size is 2 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+A--1--2--B
+numTrans = 3
+R = 7.8 Mbps = 7800000 bps
+d = 175500 m/s
+s = 270000000 m/s
+L = 2 KiB = 16384 bits
+t_nodal = 3*L/R+d/s = 0.00630153846153846153846153846154 + 0.00065 = 0.00695153846153846153846153846154 s = 7.0 ms
+
+_________________________________
+
+#24
+
+How long does it take to send a 9 MiB file from Host A to Host B over a circuit-switched network, assuming:
+
+Total link transmission rate = 88.5 Gbps.
+Network is TDM, with 9 permitted users, each with an equal time slot size.
+A link connection requires a setup time of 80.3 ms.
+Your answer should be in miliseconds (ms) with one decimal place, and without the unit (e.g. "140.6" without the quotes)
+
+L = 9 MiB = 75497472 bits
+R = 88.5 Gbps = 88500000000 bps
+R/user = 9833333333.3333333333333333333333 bps
+t_linksetup = 80.3 ms
+t_nodal = L/Ruser*1000 + t_linksetup = 7.6777090169491525423728813559322 + 80.3 = 87.977709016949152542372881355932 ms = 88.0 ms
+
+_________________________________
+
+#26
+
+How long does it take to send a 6 MiB file from Host A to Host B over a circuit-switched network, assuming:
+
+Total link transmission rate = 40.9 Gbps.
+Network is FDM, with 6 permitted users, each with an equal bandwidth share.
+A link connection requires a setup time of 76.5 ms.
+Your answer should be in miliseconds (ms) with one decimal place, and without the unit (e.g. "140.6" without the quotes)
+
+L = 6 MiB = 50331648 bits
+R = 40.9 Gbps = 40900000000 bps
+R/user = 6816666666.6666666666666666666667 bps
+link_setup = 76.5 ms
+t_nodal = L/Ruser*1000 + link_setup = 83.883615843520782396088019559902 ms = 83.9 ms
+
+_________________________________
+ATTEMPT 3
+
+How long does it take to send a 11 MiB file from Host A to Host B over a circuit-switched network, assuming:
+
+Total link transmission rate = 83.3 Gbps.
+Network is TDM, with 4 permitted users, each with an equal time slot size.
+A link connection requires a setup time of 57.1 ms.
+Your answer should be in miliseconds (ms) with one decimal place, and without the unit (e.g. "140.6" without the quotes)
+
+L = 92274688 bits
+R = 83300000000 bps
+R/user = 20825000000 bps
+linksetup = 57.1 ms
+t_nodal = 61.530957406962785114045618247299 = 61.5 ms
+
+_________________________________
+
+#24
+
+Given the attached image, and:h
+
+Host A converts analog to digital at a = 43 Kbps
+Link transmission rate R = 1.2 Mbps
+Host A groups data into packets of length L = 99 bytes
+Distance to travel d = 765.8 km
+Propagation speed s = 2.5 x 108 m/s
+Host A sends each packet to Host B as soon as it gathers a whole packet.
+Host B converts back from digital to analog as soon as it receives a whole packet.
+How much time elapses from when the first bit starts to be created until the conversion back to analog begins? Give answer in milliseconds (ms) to two decimal places, normal rounding, without units (e.g. 1.5623 ms would be entered as "1.56" without the quotes)
+
+R_conv = 43000 bps
+R_link = 1200000 bps
+L = 792 bits
+d = 765800 m
+s = 250000000 m/s
+t_nodal = 22.141804651162790697674418604651 = 22.1 ms
+
+_________________________________
+
+Suppose there are 51 packets entering a queue at the same time. Each packet is of size 5 MiB. The link transmission rate is 2 Gbps. What is the queueing delay of packet number 17 (in milliseconds, rounded to one decimal place, e.g. 0.01234 seconds would be entered as "12.3")
+
+L = 41943040 bits
+R = 2000000000 bps
+queuedelay17 = 16*41943040/2000000000 = 335.54432 = 335.5 ms
+
+_________________________________
+
+How long does it take to send a 2 MiB file from Host A to Host B over a circuit-switched network, assuming:
+
+Total link transmission rate = 58.3 Gbps.
+Network is FDM, with 7 permitted users, each with an equal bandwidth share.
+A link connection requires a setup time of 76.4 ms.
+Your answer should be in miliseconds (ms) with one decimal place, and without the unit (e.g. "140.6" without the quotes)
+
+L = 16777216 bits
+R = 8328571428.5714285714285714285714 bps
+link_setup = 76.4 ms
+t_nodal = 78.414417015437392795883361921098 = 78.4 ms
+
+_________________________________
+
+Given the attached image, and:h
+
+Host A converts analog to digital at a = 41 Kbps
+Link transmission rate R = 3.1 Mbps
+Host A groups data into packets of length L = 53 bytes
+Distance to travel d = 884.5 km
+Propagation speed s = 2.5 x 108 m/s
+Host A sends each packet to Host B as soon as it gathers a whole packet.
+Host B converts back from digital to analog as soon as it receives a whole packet.
+How much time elapses from when the first bit starts to be created until the conversion back to analog begins? Give answer in milliseconds (ms) to two decimal places, normal rounding, without units (e.g. 1.5623 ms would be entered as "1.56" without the quotes)
+
+R_conv = 41000 bps
+R_link = 3100000 bps
+L = 424 bits
+d/s = 0.003538 s
+t_nodal = 14.016237608182533438237608182533 = 14.0
+
+_________________________________
+
+Suppose there are 5 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 4.4 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 177.7 km
+
+The speed of propagation through the transmission medium is is 2.7 x 108 m/s
+
+The packet size is 3 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+L = 3 KiB = 24576 bits
+R = 4400000 bps
+d = 177700 m
+s = 270000000 m/s
+numTrans = 6
+t_nodal = 6*L/R + d/s = 34.170875420875420875420875420875 = 34.2 ms
+
+_________________________________
+
+Suppose there are 90 packets entering a queue at the same time. Each packet is of size 1 MiB. The link transmission rate is 3.8 Gbps. What is the queueing delay of packet number 5 (in milliseconds, rounded to one decimal place, e.g. 0.01234 seconds would be entered as "12.3")
+
+numPackets = 90
+L = 8388608 bits
+R = 3800000000 bps
+queueing_delay5 = 4L/R = 8.8301136842105263157894736842105
+
+_________________________________
+
+Suppose there are 2 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 4.8 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 184.3 km
+
+The speed of propagation through the transmission medium is is 2.7 x 108 m/s
+
+The packet size is 3 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+R = 4800000 bps
+d = 184300 m
+s = 270000000 bps
+L = 24576 bits
+t_nodal = 3L/R*1000 + d/s = 16.042592592592592592592592592593 = 16.04 ms
+
+_________________________________
+
+Given a link with a maximum transmission rate of 80.5 Mbps. Only two computers, X and Y, wish to transmit starting at time t = 0 seconds. Computer X sends fileX (15 MiB) and computer Y sends fileY (365 KiB), both starting at time t = 0.
+
+Statistical multiplexing is used, with details as follows
+Packet Payload Size = 1000 Bytes
+Packet Header Size = 24 Bytes (overhead)
+Ignore Processing and Queueing delays
+Assume partial packets (packets consisting of less than 1000 Bytes of data) are padded so that they are the same size as full packets.
+Assume continuous alternating-packet transmission.
+Computer X gets the transmission medium first.
+At what time (t = ?) would FileY finish transmitting?
+
+Give answer in milliseconds, without units, and round to one decimal places (e.g. for an answer of 0.013777 seconds you would enter "13.8" without the quotes)
+
+R = 80500000 bps
+Lx = 125829120 bits
+Ly = 2990080 bits
+payload = 8000 bits
+numPacketsX = 125829120/8000 = 15728.64 = 15729 packets
+numPacketsY = 2990080/8000 = 373.76 = 374 packets
+numPacketsWhenFileYFinishes = 374 * 2 = 748
+TotalPacketSize = 1024 B = 8192 bits
+numPacketsWhenFileYFinishes = 746 packets
+Tx = 8192 * (15729 + 374) / 80500000 = 1.6387052919254658385093167701863 s = 1.6s = 1638.7 ms
+Ty = 8192 * 748 / 80500000 = 0.07611945341614906832298136645963 ms = 75.9 ms
+
+_________________________________
+
+Suppose there are 3 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 6.9 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 185.5 km
+
+The speed of propagation through the transmission medium is is 2.7 x 108 m/s
+
+The packet size is 1 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+R = 6900000 bps
+d = 185500 m/s
+s = 270000000 m/s
+L = 1 KiB = 8192
+
+t_nodal = 4 * 8192 / 6900000 + 185500/270000000 = 5.4360225442834138486312399355878 ms
+
+_________________________________
+
+Given a link with a maximum transmission rate of 84.3 Mbps. Only two computers, X and Y, wish to transmit starting at time t = 0 seconds. Computer X sends fileX (3 MiB) and computer Y sends fileY (60 KiB), both starting at time t = 0.
+
+Computer X gets the transmission medium first, so Computer Y must wait.
+For the following calculations, assume maximum transmission rate during transmission.
+Suppose that entire files are sent as a stream (no packets, no multiplexing).
+
+At what time (t = ?) would FileX finish transmitting?
+
+Give answer in seconds, without units, and round to two decimal places (e.g. for an answer of 12.4567 seconds you would enter "12.46" without the quotes)
+
+R = 84300000 bps
+Lx = 25165824 bits
+Ly = 491520 bits
+
+Lx/R = 25165824/84300000 = 0.29852697508896797153024911032028s = 0.30s
+
+_________________________________
+
+Given a link with a maximum transmission rate of 13.1 Mbps. Only two computers, X and Y, wish to transmit starting at time t = 0 seconds. Computer X sends fileX (3 MiB) and computer Y sends fileY (332 KiB), both starting at time t = 0.
+
+Statistical multiplexing is used, with details as follows
+Packet Payload Size = 1000 Bytes
+Packet Header Size = 24 Bytes (overhead)
+Ignore Processing and Queueing delays
+Assume partial packets (packets consisting of less than 1000 Bytes of data) are padded so that they are the same size as full packets.
+Assume continuous alternating-packet transmission.
+Computer X gets the transmission medium first.
+At what time (t = ?) would FileX finish transmitting?
+
+Give answer in seconds, without units, and round to two decimal places (e.g. for an answer of 12.4567 seconds you would enter "12.46" without the quotes)
+
+R = 13100000 bps
+Lx = 25165824 bits
+Ly = 2719744 bits
+numPacketX = 25165824/8000 = 3145.728 = 3146 packets
+numPacketsY = Ly/R = 339.968 = 340 packets
+totalPacketSize = 1024 * 8 = 8192 bits
+t_nodal = 8192 * (3146 + 340) / 13100000 = 2.1799474809160305343511450381679s = 2.18s
+
+_________________________________
+
+Suppose there are 5 routers in sequence between Host A and Host B, all of which use store-and-forward routing. What is the total end-to-end delay for a packet originating from Host A with destination Host B, under the following conditions.
+
+Each of the link transmission rates are 4.7 Mbps
+
+The total distance from Host A to Host B along its path of transmisison is 164.8 km
+
+The speed of propagation through the transmission medium is is 2.7 x 108 m/s
+
+The packet size is 2 KiB
+
+Remember that you must also uplink from Host A to the first router. Give answer in milliseconds, rounded to 1 decimal place, without units (e.g. for 0.12345 seconds you would enter "123.5" without the quotes).
+
+num_trans = 6
+R = 4700000 bps
+d = 164800 m
+s = 270000000 m/s
+L = 16384 bits
+t_nodal = 6*16384/4700000 + 164800/270000000 = 0.02152611505122143420015760441292s = 21.526115051221434200157604412924 ms = 21.5 ms
+
+_________________________________
+
+Given a link with a maximum transmission rate of 55 Mbps. Only two computers, X and Y, wish to transmit starting at time t = 0 seconds. Computer X sends fileX (5 MiB) and computer Y sends fileY (401 KiB), both starting at time t = 0.
+
+Computer X gets the transmission medium first, so Computer Y must wait.
+For the following calculations, assume maximum transmission rate during transmission.
+Suppose that entire files are sent as a stream (no packets, no multiplexing).
+
+At what time (t = ?) would FileY finish transmitting?
+
+Give answer in seconds, without units, and round to two decimal places (e.g. for an answer of 12.4567 seconds you would enter "12.46" without the quotes)
+
+R = 55000000 bps
+Lx = 41943040 bits
+Ly = 3284992 bits
+t_nodal = Ly/R + Lx/R = 0.82232785454545454545454545454545s = 0.82s
+
+_________________________________
+
+Given a link with a maximum transmission rate of 63.8 Mbps. Only two computers, X and Y, wish to transmit starting at time t = 0 seconds. Computer X sends fileX (17 MiB) and computer Y sends fileY (99 KiB), both starting at time t = 0.
+
+Computer X gets the transmission medium first, so Computer Y must wait.
+For the following calculations, assume maximum transmission rate during transmission.
+Suppose that entire files are sent as a stream (no packets, no multiplexing).
+
+At what time (t = ?) would FileX finish transmitting?
+
+Give answer in seconds, without units, and round to two decimal places (e.g. for an answer of 12.4567 seconds you would enter "12.46" without the quotes)
+
+R = 63800000 bps
+Lx = 142606336 bits
+Ly = 811008 bits
+t_nodal = Lx/R = 142606336/63800000 = 2.2352090282131661442006269592476 = 2.24s
+
+_________________________________
+
+A client in a network with a proxy server requests a 2 MiB file from an internet server, fakeservername.com. The network’s proxy server has a 1.94 Mbps connection to fakeservername.com. The average response time between the network’s proxy server and the internet origin server (including RTT) is 9.2 seconds for a small “header-only” HTTP request/response. The file requested by the client is currently in the proxy server cache, but the proxy server relays the client’s request to the internet server with “if-modified since”.
+
+Assume that transmissions between the proxy and the origin servers are stream (not packets) at full bandwidth, with negligible propagation delay.
+
+How much time is saved if the file has not been modified? (Give answer in seconds, without units, rounded to two decimal places, so for an answer of 1.4233 seconds you would enter "1.42" without the quotes.)
+
+L = 16777216 bits
+R = 1940000 bps
+RTT = 9.2s
+t_nodal = 16777216/1940000 = 8.6480494845360824742268041237113 = 8.65s
+
+_________________________________
+
+non-persistent=2*30+2 = 62
+persistent = 30+2 = 32
+diff = 62-32 = 30
+t_diff = 30 * 1.4 = 42
+
+_________________________________
+
+A client in a network with a proxy server requests a 9 MiB file from an internet server, fakeservername.com. The network’s proxy server has a 3.60 Mbps connection to fakeservername.com. The average response time between the network’s proxy server and the internet origin server (including RTT) is 1.4 seconds for a small “header-only” HTTP request/response. The file requested by the client is currently in the proxy server cache, but the proxy server relays the client’s request to the internet server with “if-modified since”.
+
+Assume that transmissions between the proxy and the origin servers are stream (not packets) at full bandwidth, with negligible propagation delay.
+
+How much time is saved if the file has not been modified? (Give answer in seconds, without units, rounded to two decimal places, so for an answer of 1.4233 seconds you would enter "1.42" without the quotes.)
+
+L = 75497472 bits
+R = 3600000 bps
+t_conn = 1.4s
+L/R = 20.97152s = 20.97s
+
+_________________________________
+
+A client in a network with a proxy server requests a 5 MiB file from an internet server, fakeservername.com. The network’s proxy server has a 1.20 Mbps connection to fakeservername.com. The average response time between the network’s proxy server and the internet origin server (including RTT) is 2.1 seconds for a small “header-only” HTTP request/response. The file requested by the client is currently in the proxy server cache, but the proxy server relays the client’s request to the internet server with “if-modified since”.
+
+Assume that transmissions between the proxy and the origin servers are stream (not packets) at full bandwidth, with negligible propagation delay.
+
+How much time is saved if the file has not been modified? (Give answer in seconds, without units, rounded to two decimal places, so for an answer of 1.4233 seconds you would enter "1.42" without the quotes.)
+
+L = 41943040 bits
+R = 1200000 bps
+L/R = 34.952533333333333333333333333333s = 34.95s
+
+
+_________________________________
+
+ 10000001
+ 10000001
+100000010
+ 00000011
+ 
+ 00000001
+ 11111111
+100000000
+ 00000001
+ 
+ 01101001
+ 10010110
+ 
+ 10010110
+ 10011100
+100110010
+ 00110011
+ 
+ 00010110
+ 10011100
+ 10110010
+ 
+ 10010110
+ 10011100
+100110010
+ 00110011
+ 
+ 00010110
+ 10011100
+ 10110010
+ 
+ 00000001
+ 11111111
+ 00000001
+ 
+ 10010110
+ 10010000
+100100110
+ 00100111
+ 
+ 10000011
+ 10000000
+100000011
+ 00000100
+ 
+ 10000010
+ 10001111
+100010001
+ 00010010
+ 
+ 10000011
+ 10000000
+100000100
+ 00000101
+ 
+_________________________________
+
+Assume a TCP sender is continuously sending 1,144-byte segment. If a TCP receiver advertises a window size of 8,895 bytes, and with a link transmission rate 40 Mbps an end-to-end propagation delay of 14.4 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+L = 1144 bytes = 9152 bits
+R = 40 Mbps = 40000000 bps
+numSegments = 8895 / 1144 = 7.7753496503496503496503496503497 = 7 segments
+t_prop = 14.4 ms
+t_trans = 9152 / 40000000 = 0.2288 ms
+RTT = 14.4 * 2 = 28.8
+delay per packet = 28.8 + 0.2288 = 29.0288 ms
+utilization = 7 * 0.2288 / 29.0288 = 0.05517279391500854323981700931489 = 5.5%
+
+_________________________________
+
+ 10010011
+ 10010000
+100100011
+ 00100100
+ 
+_________________________________
+
+Assume a TCP sender is continuously sending 1,243-byte segment. If a TCP receiver advertises a window size of 9,179 bytes, and with a link transmission rate 14 Mbps an end-to-end propagation delay of 25.6 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+L = 1243 bytes = 9944 bits
+R = 14 Mbps = 14000000 bps
+numSegments = 9179 / 1243 = 7.3845534995977473853580048270314 = 7 segments
+t_prop = 25.6 ms
+RTT = 25.6 * 2 = 51.2 ms
+t_trans = 9944 / 14000000 = 0.71028571428571428571428571428571 ms
+delay per packet = RTT + t_trans = 51.2 + 0.71028571428571428571428571428571 = 51.910285714285714285714285714286 ms
+utilization = 7 * 0.71028571428571428571428571428571 / 51.910285714285714285714285714286 = 0.0957806325198419250795328203604 = 9.6%
+
+_________________________________
+
+ 00000001
+ 11111111
+100000000
+ 00000001
+ 
+_________________________________
+
+Assume a TCP sender is continuously sending 1,053-byte segment. If a TCP receiver advertises a window size of 7,955 bytes, and with a link transmission rate 12 Mbps an end-to-end propagation delay of 27.3 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+numSegments = 7955 / 1053 = 7.5546058879392212725546058879392 = 7 segments
+L = 1053 bytes = 8424 bits
+R = 12000000 bps
+t_prop = 27.3 ms
+RTT = 27.3 * 2 = 54.6 ms
+t_trans = L/R = 8424 / 12000000 = 0.000702s = 0.702 ms
+delay per packet = RTT + t_trans = 54.6 + 0.702 = 55.302 ms
+utilization = 7 * 0.702 / 55.302 = 0.08885754583921015514809590973202 = 8.8857545839210155148095909732017% = 8.9%
+
+_________________________________
+
+ 10010011
+ 10010000
+100100011
+ 00100100
+ 
+_________________________________
+
+Assume a TCP sender is continuously sending 1,090-byte segment. If a TCP receiver advertises a window size of 5,718 bytes, and with a link transmission rate 26 Mbps an end-to-end propagation delay of 22.1 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+numSegments = 5718 / 1090 = 5.2458715596330275229357798165138 = 5 segments
+L = 1090 bytes = 8720 bits
+R = 26000000 bps
+t_prop = 22.1
+t_trans = 8720/26000000 = 0.33538461538461538461538461538462 ms
+RTT = 22.1 * 2 = 44.2 ms
+delay per packet = RTT + t_trans = 44.2 + 0.33538461538461538461538461538462 = 44.535384615384615384615384615385 ms
+utilization = 5 * 0.33538461538461538461538461538462 / 44.535384615384615384615384615385 = 3.7653723918750863617521072267514 = 3.8%
+
+_________________________________
+
+ 10000011
+ 10000000
+100000011
+ 00000100
+ 
+_________________________________
+
+Assume a TCP sender is continuously sending 1,292-byte segment. If a TCP receiver advertises a window size of 6,644 bytes, and with a link transmission rate 33 Mbps an end-to-end propagation delay of 30 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+numSegments = 6644/1292 = 5.1424148606811145510835913312693 = 5 segments
+L = 1292 bytes = 10336 bits
+R = 33000000 bps
+t_prop = 30 ms
+RTT = 60 ms
+t_trans = 10336/33000000 = 0.31321212121212121212121212121212 ms
+delay per packet = 60 + 0.31321212121212121212121212121212 = 60.313212121212121212121212121212
+utilizaton = 5 * 0.31321212121212121212121212121212 / 60.313212121212121212121212121212 = 0.02596546512749606096659056561304 = 2.5965465127496060966590565613042 = 2.6%
+
+_________________________________
+
+ 10000010
+ 10001111
+100010001
+ 00010010
+ 
+_________________________________
+
+Assume a TCP sender is continuously sending 1,323-byte segment. If a TCP receiver advertises a window size of 7,669 bytes, and with a link transmission rate 14 Mbps an end-to-end propagation delay of 37.3 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+
+numSegments = 7669/1323 = 5.7966742252456538170823885109599 = 5 segments
+L = 1323 bytes = 10584 bits
+R = 14000000 bps
+t_prop = 37.3 ms
+t_trans = 10584/14000000 * 1000 = 0.756 ms
+RTT = 74.6 ms
+delay per packet = 75.356 ms
+utilization = 5 * 0.756 / 75.356 = 5.0161898189925155263018206911195 % = 5.0 %
+
+numSegments = 7669/1323 = 5.7966742252456538170823885109599 = 5 segments
+L = 1323 bytes = 10584 bits
+R = 14000000 bps
+t_trans = 0.756 ms
+t_prop = 37.3 ms
+RTT = 74.6 ms
+delay per packet = 74.6 + 0.756 = 75.356 ms
+utilization = 5 * 0.756 / 75.356 = 0.05016189818992515526301820691119 = 5.0161898189925155263018206911195 % = 5.0 %
+
+_________________________________
+
+ 00010110
+ 10011100
+ 10110010
+
+_________________________________
+
+Assume a TCP sender is continuously sending 1,160-byte segment. If a TCP receiver advertises a window size of 7,620 bytes, and with a link transmission rate 22 Mbps an end-to-end propagation delay of 21.9 ms, what is the utilization? Assume no errors, no processing or queueing delay, and ACKs transmit instantly. Also assume the sender will not transmit a non-full segment. Give answer in percentages, rounded to one decimal place, without units (e.g. for an answer of 10.43% you would enter "10.4" without the quotes).
+
+numSegments = 7620/1160 = 6.5689655172413793103448275862069 = 6 segments
+L = 1160 B = 9280 bits
+R = 22000000 bps
+t_trans = 0.42181818181818181818181818181818 ms
+t_prop = 21.9 ms
+RTT = 21.9 * 2 = 43.8 ms
+delay per packet = RTT + t_trans = 44.221818181818181818181818181818
+utilization = 6 * 0.42181818181818181818181818181818 / 44.221818181818181818181818181818 = 5.7232135515171449716306224817038% = 5.7%
