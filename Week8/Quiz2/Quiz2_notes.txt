@@ -1,0 +1,135 @@
+#1
+
+152.238.157.195
+10011000 11101110 10011101 11000011
+
+__________________________________________
+
+#7 
+
+A host starts a TCP transmission with an EstimatedRTT of 36.3ms (from the “handshake”). The host then sends 3 packets and records the RTT for each:
+
+SampleRTT1 = 31.2 ms
+
+SampleRTT2 = 17.6 ms
+
+SampleRTT3 = 41.8 ms
+
+(NOTE: SampleRTT1 is the “oldest”; SampleRTT3 is the most recent.)
+
+Using an exponential weighted moving average with a weight of 0.4 given to the most recent sample, what is the EstimatedRTT for packet #4? Give answer in miliseconds, rounded to one decimal place, without units, so for an answer of 0.01146 seconds, you would enter "11.5" without the quotes.
+
+0.6 * 36.3  + 0.4 * 31.2 = 34.26
+0.6 * 34.26 + 0.4 * 17.6 = 27.596
+0.6 * 27.596 + 0.4 * 41.8 = 33.2776 = 33.3 ms
+
+__________________________________________
+
+#28
+10011110 10111001 10011101 00000000 -- 
+10011110 10111001 10011101 10000000
+
+__________________________________________
+
+#29
+
+For the IPv4 CIDR address 146.10.150.116 /24
+
+146.10.150.116 /24
+10010010 00001010 10010110/ 01110100 (host address) (146.10.150.116)
+11111111 11111111 11111111/ 00000000 (netmask) (255.255.255.0)
+00000000 00000000 00000000/ 11111111 (host mask) (0.0.0.255)
+
+10010010 00001010 10010110/ 01110100 (host address) (146.10.150.116)
+00000000 00000000 00000000/ 11111111 (host mask) (0.0.0.255) [OR]
+10010010 00001010 10010110/ 11111111 (broadcast addr) (146.10.150.255)
+
+10010010 00001010 10010110/ 01110100 (host address) (146.10.150.116)
+00000000 00000000 00000000/ 11111111 (host mask) (0.0.0.255) [AND]
+00000000 00000000 00000000/ 01110100 (host number) (116)
+
+10010010 00001010 10010110/ 01110100 (host address) (146.10.150.116)
+10010010 00001010 10010110/ 00000000 (network addr) (146.10.150.0)
+
+32-24=8, 2^8-2 = 254 (total host addresses on network)
+
+__________________________________________
+
+#30
+
+A private network uses a NAPT device at public IP address 207.96.121.8 The computers in the network use addresses of the form 10.0.0.x/22. Suppose that computer inside the NATed network sends a request with 
+
+Source address:      10.0.2.5
+Source port:           750
+
+Destination address:     128.193.4.20 
+Destination port:          60 
+
+The next available port number on the NAPT device is 12345.
+
+__________________________________________
+
+#31
+
+Suppose that a 2500-byte datagram (identification #23) must transit a network which has a 740-byte MTU. Assume the minimum IP and TCP header sizes, i.e., the IP header is 20 bytes and the TCP header is 20 bytes.
+
+
+How many fragments are created? 4 fragments
+ceil((2500-20)/(740-20)) = ceil(3.4444444444444444444444444444444) = 4
+
+How many bytes of application data are carried in the first fragment?  bytes
+740 - 20 - 20 = 700
+
+How many bytes of application data are carried in the second fragment?  bytes
+740 - 20 = 720
+
+How many bytes of application data are carried in the last fragment?  bytes
+2500 - 700 - 720 - 720 - 20 - 20 = 320
+
+What is the identification number of the second fragment? # 23
+
+
+What is the fragment offset in the last fragment?
+frag1 = (740 - 20)/8 * 0 = 0
+frag2 = (740 - 20)/8 * 1 = 90
+frag3 = (740 - 20)/8 * 2 = 180
+frag4 = (740 - 20)/8 * 3 = 270
+
+__________________________________________
+
+#32
+
+Using the version of Dijkstra's Algorithm discussed in the lectures (see below), and the network configuration in the graph (see below), to calculate the shortest path from node B to node G.
+
+(NOTE#1: A tie goes to the lower node, alphabetically (A before F).
+
+What is the full shortest path from node B to node G? (e.g. for a path from H to D you would type "H-D" without quotes) 
+What is the cost of the shortest path from node B to node G? 
+Fill in the complete routing table for node B, as it would be calculated by Dijkstra's algorithm and stored inside router B. (It's OK to do this by inspection; you don't have to crank through Dijkstra's algorithm for each destination.)
+
+Node	Dst 	Rx		Px
+A2		4		C		C
+B0		*		*		*
+C1		1		C		B
+D4		6		C		C
+E3		5		C		A
+F5		6		C		A
+G6		7		C		E
+H7		8		C		G
+
+B-C-A-E-G-H
+1+3+1+2+1=8
+
+
+Node	Dst 	Rx		Px
+A2		4		C		C
+B0		*		*		*
+C1		1		C		B
+D4		6		C		C
+E3		5		C		A
+F5		6		C		A
+G6		7		C		E
+H7		8		C		G
+
+B-C-A-E-G
+1+3+1+2=7
