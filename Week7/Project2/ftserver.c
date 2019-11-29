@@ -305,9 +305,12 @@ int startup(char *hostName, int ctrlPort)
 			/* Receive data port number */
 			memset(buffer2, '\0', sizeof(buffer2));
 			receiveData(ctrlConnFD, buffer2, sizeof(buffer2));
-
+			
 			/* Convert data port number to int */
 			dataPort = atoi(buffer2);
+
+			/* Send ack to ftclient */
+			sendData(ctrlConnFD, "ftserver: ack");
 
 			/* Set up the server address struct */
 			memset((char*)&dataSocketAddr, '\0', sizeof(dataSocketAddr));

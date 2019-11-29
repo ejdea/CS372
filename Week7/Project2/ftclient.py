@@ -132,6 +132,12 @@ def startup():
 			dbg_print("Send port number to ftserver");
 			send(ctrlSockFD, str(dataPort))
 
+			# Receive response from ftserver
+			dbg_print("Receive response from ftserver");
+			data = receive(ctrlSockFD)
+
+			dbg_print("Received data = " + data)
+
 			# Parse ftserver response
 			if data == "ftserver: error: invalid command":
 				print("ftclient: error: invalid command")
@@ -154,7 +160,7 @@ def startup():
 				# Listen for network traffic over the socket
 				dataSockFD.listen(1)
 
-                # Let ftserver know that ftclient is ready to receive connections
+				# Let ftserver know that ftclient is ready to receive connections
 				dbg_print("[ftclient] Let ftserver know that ftclient is ready to receive connections");
 				send(ctrlSockFD, "ftclient: data connection ready")
 
@@ -174,10 +180,10 @@ def startup():
 					data = receive(dataConn)
 
 					print(data)
-
-					# Receive response from ftserver
-					dbg_print("Receive response from ftserver");
-					data = receive(ctrlSockFD)
+		elif data == "ftserver: error: could not connect to ftclient":
+			print("ftclient: error: could not connect to ftclient")
+		else:
+			print("ftclient: error: invalid command")
 	except Exception as e:
 		print("ftclient: error: " + str(e));
 	finally:
