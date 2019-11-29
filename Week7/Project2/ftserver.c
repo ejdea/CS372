@@ -100,6 +100,13 @@ int strlen2(char* input)
 ******************************************************************************/
 void catchSIGINT(int signo)
 {
+#if DEBUG
+	/* Output status to user */
+	char msg[] = "\n[ftserver] Exiting...\n";
+	write(STDOUT_FILENO, msg, strlen2(msg));
+	fflush(stdout);
+#endif
+
 	exitStatus = 1;
 
 	/* Close sockets */
@@ -111,13 +118,6 @@ void catchSIGINT(int signo)
 
 	if (dataSocketFD)
 		close(dataSocketFD);
-
-#if DEBUG
-	/* Output status to user */
-	char msg[] = "\n[ftserver] Exiting...\n";
-	write(STDOUT_FILENO, msg, strlen2(msg));
-	fflush(stdout);
-#endif
 }
 
 /******************************************************************************
@@ -255,6 +255,10 @@ int startup(char *hostName, int ctrlPort)
 	if (ctrlSocketFD < 0)
 		error("ftserver: error: could not open socket");
 
+	/* Setup socket address to be reusable */
+	if (setsockopt(ctrlSocketFD, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int)) < 0)
+		error("ftserver: error: failed to set socket options");
+
 	/* Enable the socket to begin listening. Connect socket to port */
 	if (bind(ctrlSocketFD, (struct sockaddr *)&ctrlSocketAddr, sizeof(ctrlSocketAddr)) < 0)
 		error("ftserver: error: could not bind socket to port");
@@ -273,7 +277,7 @@ int startup(char *hostName, int ctrlPort)
 	if (exitStatus)
 		exit(ERROR_NONE);
 
-	DBG_PRINT1("[ftserver] Connected client at port %d\n", ntohs(ctrlSocketAddr.sin_port));
+	DBG_PRINT2("[ftserver] Established control connection with %s:%d\n", hostName, ctrlPort);
 
 	/* Process commands from ftclient */
 	{
@@ -338,9 +342,11 @@ int startup(char *hostName, int ctrlPort)
 			if (dataSocketFD < 0)
 				error("ftserver: error: opening socket");
 
-			DBG_PRINT2("[ftserver] Data Connection: hostName = %s, dataPort = %d\n", hostName, dataPort);
-			DBG_PRINT2("[ftserver] Data Connection: dataSocketFD = %d, dataSocketAddr.sin_port = %hu\n", dataSocketFD, dataSocketAddr.sin_port);
+			/* Setup socket address to be reusable */
+			if (setsockopt(dataSocketFD, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int)) < 0)
+				error("ftserver: error: failed to set socket options");
 
+			DBG_PRINT2("[ftserver] Data Connection: hostName = %s, dataPort = %d\n", hostName, dataPort);
 			DBG_PRINT("[ftserver] Waiting to receive ftclient connection ready status\n");
 
 			/* Wait for ftclient to send connection ready status */
@@ -359,7 +365,7 @@ int startup(char *hostName, int ctrlPort)
 				error("ftserver: error: could not connect to socket");
 			}
 
-			DBG_PRINT2("[ftserver] Successfully connected to %s:%d", hostName, dataPort);
+			DBG_PRINT2("[ftserver] Established data connection with %s:%d\n", hostName, dataPort);
 
 			if (strcmp(buffer, "-l") == 0)
 			{
@@ -405,12 +411,9 @@ int startup(char *hostName, int ctrlPort)
 					/* This is the Parent process. Wait for child process to finish and
 					 * cmd output.
 					 */
-					DBG_PRINT("[ftserver] [parent] Blocking wait started\n");
 
 					/* Block parent process until child process ends */
 					waitpid(-1, &status, 0);
-
-					DBG_PRINT("[ftserver] [parent] Blocking wait done\n");
 
 					/* Close target file descriptor*/
 					close(pipe_fd[1]);
@@ -609,14 +612,25 @@ int startup(char *hostName, int ctrlPort)
 
 	/* Close sockets */
 	if (ctrlSocketFD)
+	{
+		DBG_PRINT("[ftserver] Cleanup ctrlSocketFD\n");
 		close(ctrlSocketFD);
+	}
 
 	if (ctrlConnFD)
+	{
+		DBG_PRINT("[ftserver] Cleanup ctrlConnFD\n");
 		close(ctrlConnFD);
+	}
 
 	if (dataSocketFD)
+	{
+		DBG_PRINT("[ftserver] Cleanup dataSocketFD\n");
 		close(dataSocketFD);
+	}
 	
+	DBG_PRINT1("[ftserver] Return status %d\n", status);
+
 	return status;
 }
 

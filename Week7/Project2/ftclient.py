@@ -173,7 +173,7 @@ def startup():
 					# Receive connection request
 					data = receive(dataConn)
 
-					printf("data = " + data)
+					print(data)
 
 					# Receive response from ftserver
 					dbg_print("Receive response from ftserver");
