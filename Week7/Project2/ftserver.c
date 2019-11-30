@@ -1,12 +1,12 @@
 /******************************************************************************
 * Author:			Edmund Dea (deae@oregonstate.edu)
 * Student ID:		933280343
-* Last Modified:	12/1/2019
+* Last Modified:	11/30/2019
 * Course:			CS372
 * Title:			Project 2: FTP Server
 * Description:		This program acts as an FTP server that sends and receives 
 *					files using socket programming.
-* References:		Many sections of this code are from CS344 projects
+* References:		Sections of this code are based on Edmund's CS344 projects
 ******************************************************************************/
 
 #include <stdio.h>
@@ -22,8 +22,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define DEBUG					1
-#define DEBUG2					0
+#define DEBUG					0
 
 /* Global macros */
 #define MAX_BUFFER_SIZE			4096
@@ -58,7 +57,8 @@
 #define DBG_PRINT2(format, arg1, arg2) printf(format, arg1, arg2);
 #define DBG_PRINT3(format, arg1, arg2, arg3) printf(format, arg1, arg2, arg3);
 #else
-#define DBG_PRINT(format, arg)
+#define DBG_PRINT(format)
+#define DBG_PRINT1(format, arg)
 #define DBG_PRINT2(format, arg1, arg2)
 #define DBG_PRINT3(format, arg1, arg2, arg3)
 #endif
@@ -85,6 +85,7 @@ void error(const char *msg)
 * Arguments:	N/A
 * Return:		String length
 * Description:	Returns number of characters in the input string
+* References:	This function is based on Edmund's CS344 projects
 ******************************************************************************/
 int strlen2(char* input)
 {
@@ -101,6 +102,7 @@ int strlen2(char* input)
 * Arguments:	N/A
 * Return:		void
 * Description:	Catches and handles the SIGINT signal.
+* References:	This function is based on Edmund's CS344 projects
 ******************************************************************************/
 void catchSIGINT(int signo)
 {
@@ -122,6 +124,9 @@ void catchSIGINT(int signo)
 
 	if (dataSocketFD)
 		close(dataSocketFD);
+
+	/* Output exit */
+	printf("\r\n[ftserver] Exiting\r\n");
 }
 
 /******************************************************************************
@@ -135,10 +140,6 @@ int sendData(int socketFD, char *data, int bufferSize)
 {
 	int charsWritten;
 	int i, status, maxRetries = 10;
-
-#if DEBUG2
-	DBG_PRINT("[ftserver] ---> sendData ENTER\n")
-#endif
 
 	/* Keep trying to send data until success up to maxRetries times */
 	for (i = 0; i < maxRetries; i++)
@@ -155,17 +156,15 @@ int sendData(int socketFD, char *data, int bufferSize)
 		}
 		else
 		{
+#if DEBUG
 			if (bufferSize < MAX_BUFFER_SIZE)
-				DBG_PRINT1("[ftserver] Sent \"%s\"\n", data);
+				printf("[ftserver] Sent \"%s\"\n", data);
+#endif
 
 			status = COMPLETE;
 			break;
 		}
 	}
-	
-#if DEBUG2
-	DBG_PRINT("[ftserver] <--- sendData EXIT\n")
-#endif
 
 	return status;
 }
@@ -181,10 +180,6 @@ int sendData(int socketFD, char *data, int bufferSize)
 int receiveData(int socketFD, char *buffer, int bufferSize)
 {
 	int charsRead, i, status, maxRetries = 10;
-	
-#if DEBUG2
-	DBG_PRINT("[ftserver] ---> receiveData ENTER\n")
-#endif
 
 	for (i = 0; i < maxRetries; i++)
 	{
@@ -208,10 +203,6 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 			break;
 		}
 	}
-	
-#if DEBUG2
-	DBG_PRINT("[ftserver] <--- receiveData EXIT\n")
-#endif
 
 	return status;
 }
@@ -221,7 +212,7 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 * Arguments:	N/A
 * Return:		Exit Code
 * Description:	Starts the FTP server and handles connections with ftclient
-* Reference:	Some sections of this code are from Edmund's CS344 projects
+* References:	This function is originally based on Edmund's CS344 projects
 ******************************************************************************/
 int startup(char *hostName, int ctrlPort)
 {
@@ -295,6 +286,8 @@ int startup(char *hostName, int ctrlPort)
 	/* Enable socket - it can now receive up to 1 connection */
 	listen(ctrlSocketFD, 1);
 
+	printf("[ftserver] Waiting for client to connect...\n");
+
 	/* Accept connection */
 	ctrlConnFD = accept(ctrlSocketFD, (struct sockaddr *)&ctrlSocketAddr, &sizeOfClientInfo);
 
@@ -304,7 +297,7 @@ int startup(char *hostName, int ctrlPort)
 	if (exitStatus)
 		exit(ERROR_NONE);
 
-	DBG_PRINT2("[ftserver] Established control connection with %s:%d\n", hostName, ctrlPort);
+	printf("[ftserver] Established control connection with %s:%d\n", hostName, ctrlPort);
 
 	/* Process commands from ftclient */
 	{
@@ -617,6 +610,9 @@ int main(int argc, char *argv[])
 
 	/* Start FTP server */
 	status = startup(hostName, ctrlPort);
+
+	/* Display exit */
+	printf("[ftserver] Exiting\n");
 
 	return status;
 }

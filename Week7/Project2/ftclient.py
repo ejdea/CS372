@@ -1,7 +1,7 @@
 ###############################################################################
 # Author:	 		Edmund Dea (deae@oregonstate.edu)
 # Student ID:		933280343
-# Last Modified:	12/1/2019
+# Last Modified:	11/30/2019
 # Course:			CS372
 # Title:			Project 2: FTP Client
 # Description:		This program acts an FTP client that sends and receives 
@@ -13,10 +13,9 @@ import sys
 import signal
 import os.path
 
-DEBUG 					= 1
+DEBUG 					= 0
 
-ERR_ARGS                = 1
-
+# Macros
 MAX_BUFFER_SIZE 		= 4096
 MAX_CONNECTION_REQUESTS	= 1
 CHAR_ENCODING_FORMAT	= "utf-8"
@@ -25,6 +24,9 @@ DEFAULT_CTRLPORT        = 35121
 DEFAULT_DATAPORT        = 35122
 MIN_PORT_NUMBER			= 1
 MAX_PORT_NUMBER         = 2
+
+# Exit codes
+ERR_ARGS                = 1
 
 #------------------------------------------------------------------------------
 # Class:       dbg_print
@@ -235,6 +237,7 @@ def startup():
 						#dbg_print("data = " + data)
 
 						# Check if file exists already
+						# Reference: https://linuxize.com/post/python-check-if-file-exists/
 						if os.path.exists(filename):
 							choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
 							while not choice or (choice != "y" and choice != "n"):
@@ -245,16 +248,17 @@ def startup():
 							fpFile = open(filename, "w")
 
 							# Write data to file
+							# Reference: https://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
 							fpFile.write(data)
-
-							# Output status
-							print("transfer complete")
 
 							# Cleanup
 							if (fpFile):
 								fpFile.close()
 						elif choice == "n":
 							print("Skipping file write since user chose not to overwrite")
+
+						# Output status
+						print("transfer complete")
 
 		elif data == "ftserver: error: could not connect to ftclient":
 			print("ftclient: error: could not connect to ftclient")
