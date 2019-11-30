@@ -13,7 +13,7 @@ import sys
 import signal
 import os.path
 
-DEBUG 					= 0
+DEBUG 					= 1
 
 # Macros
 MAX_BUFFER_SIZE 		= 4096
@@ -106,6 +106,7 @@ def startup():
 	ctrlSockFD = None
 	dataSockFD = None
 	cmd = None
+	choice = None
 	filename = "-1/Invalid filename/"
 
 	# Validate and parse input from command line
@@ -227,38 +228,41 @@ def startup():
 
 						dbg_print("fileSize = " + fileSize)
 
-						# Send ack to ftserver
-						send(dataConn, "ftclient: ack")
+						if fileSize == "ftclient: error: file not found":
+							print("ftclient: error: file not found")
+						else:
+							# Send ack to ftserver
+							send(dataConn, "ftclient: ack")
 
-						# Wait for ftserver to send file
-						dbg_print("[ftclient] Wait for ftserver to send file");
-						data = receiveFile(dataConn, fileSize)
+							# Wait for ftserver to send file
+							dbg_print("[ftclient] Wait for ftserver to send file");
+							data = receiveFile(dataConn, fileSize)
 
-						#dbg_print("data = " + data)
+							#dbg_print("data = " + data)
 
-						# Check if file exists already
-						# Reference: https://linuxize.com/post/python-check-if-file-exists/
-						if os.path.exists(filename):
-							choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
-							while not choice or (choice != "y" and choice != "n"):
+							# Check if file exists already
+							# Reference: https://linuxize.com/post/python-check-if-file-exists/
+							if os.path.exists(filename):
 								choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
+								while not choice or (choice != "y" and choice != "n"):
+									choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
 
-						if choice == "y":
-							# Save data to file
-							fpFile = open(filename, "w")
+							if choice == "y":
+								# Save data to file
+								fpFile = open(filename, "w")
 
-							# Write data to file
-							# Reference: https://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
-							fpFile.write(data)
+								# Write data to file
+								# Reference: https://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
+								fpFile.write(data)
 
-							# Cleanup
-							if (fpFile):
-								fpFile.close()
-						elif choice == "n":
-							print("Skipping file write since user chose not to overwrite")
+								# Cleanup
+								if (fpFile):
+									fpFile.close()
+							elif choice == "n":
+								print("Skipping file write since user chose not to overwrite")
 
-						# Output status
-						print("transfer complete")
+							# Output status
+							print("transfer complete")
 
 		elif data == "ftserver: error: could not connect to ftclient":
 			print("ftclient: error: could not connect to ftclient")
@@ -271,8 +275,10 @@ def startup():
 
 		# Cleanup
 		if ctrlSockFD is not None:
+			dbg_print("Closing ctrlSockFD")
 			ctrlSockFD.close()
 		if dataSockFD is not None:
+			dbg_print("Closing dataSockFD")
 			dataSockFD.close()
 
 #------------------------------------------------------------------------------
