@@ -60,6 +60,15 @@ def receive(conn):
 	return data
 
 #------------------------------------------------------------------------------
+# Class:       receiveFile
+# Description: Receives a file from the network source
+#------------------------------------------------------------------------------
+def receiveFile(conn):
+	data = conn.recv(MAX_BUFFER_SIZE)
+	dbg_print("received \"" + data + "\"")
+	return data
+
+#------------------------------------------------------------------------------
 # Class:       startup
 # Description: Initiates the client server
 #------------------------------------------------------------------------------
@@ -70,7 +79,7 @@ def startup():
 	ctrlSockFD = None
 	dataSockFD = None
 	cmd = None
-	filename = None
+	filename = "-1/Invalid filename/"
 
 	# Validate and parse input from command line
 	if len(sys.argv) < 5 or len(sys.argv) > 6:
@@ -174,12 +183,31 @@ def startup():
 				data = receive(ctrlSockFD)
 
 				if data == "ftserver: ack":
-					dbg_print("Received connection request")
+					dbg_print("[ftclient] Received connection request")
 
-					# Receive connection request
-					data = receive(dataConn)
+					if cmd == "-l":
+						# Receive connection request
+						data = receive(dataConn)
 
-					print(data)
+						# Output directory structure
+						print(data)
+					elif cmd == "-g":
+						# Send filename
+						send(dataConn, filename)
+
+						# Receive file payload size
+						payload = receive(dataConn)
+
+						dbg_print("payload = " + payload)
+
+						# Send ack to ftserver
+						send(dataConn, "ftclient: ack")
+
+						# Wait for ftserver to send file
+						dbg_print("[ftclient] Wait for ftserver to send file");
+						data = receive(dataConn)
+
+						dbg_print("data = " + data)
 		elif data == "ftserver: error: could not connect to ftclient":
 			print("ftclient: error: could not connect to ftclient")
 		else:

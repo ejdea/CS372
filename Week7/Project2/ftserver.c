@@ -6,6 +6,7 @@
 * Title:			Project 2: FTP Server
 * Description:		This program acts as an FTP server that sends and receives 
 *					files using socket programming.
+* References:		Many sections of this code are from CS344 projects
 ******************************************************************************/
 
 #include <stdio.h>
@@ -18,8 +19,11 @@
 #include <netdb.h> 
 #include <sys/wait.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define DEBUG					1
+#define DEBUG2					0
 
 /* Global macros */
 #define MAX_BUFFER_SIZE			4096
@@ -132,6 +136,10 @@ int sendData(int socketFD, char data[MAX_BUFFER_SIZE])
 	int charsWritten;
 	int i, status, maxRetries = 10;
 
+#if DEBUG2
+	DBG_PRINT("[ftserver] ---> sendData ENTER\n")
+#endif
+
 	/* Keep trying to send data until success up to maxRetries times */
 	for (i = 0; i < maxRetries; i++)
 	{
@@ -153,6 +161,10 @@ int sendData(int socketFD, char data[MAX_BUFFER_SIZE])
 		}
 	}
 	
+#if DEBUG2
+	DBG_PRINT("[ftserver] <--- sendData EXIT\n")
+#endif
+
 	return status;
 }
 
@@ -168,6 +180,10 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 {
 	int charsRead, i, status, maxRetries = 10;
 	
+#if DEBUG2
+	DBG_PRINT("[ftserver] ---> receiveData ENTER\n")
+#endif
+
 	for (i = 0; i < maxRetries; i++)
 	{
 		status = INCOMPLETE;
@@ -191,6 +207,10 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 		}
 	}
 	
+#if DEBUG2
+	DBG_PRINT("[ftserver] <--- receiveData EXIT\n")
+#endif
+
 	return status;
 }
 
@@ -203,18 +223,23 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 ******************************************************************************/
 int startup(char *hostName, int ctrlPort)
 {
-	int status = ERROR_NONE;
-	int size = 0;
+	int status = ERROR_NONE, fileStatus = ERROR_NONE;
 	int dataPort = 0;
+	int enable = 1;
 	struct sockaddr_in ctrlSocketAddr, dataSocketAddr;
 	struct hostent *ctrlServerHostInfo, *dataServerHostInfo;
 	char buffer[MAX_BUFFER_SIZE];
 	char buffer2[MAX_BUFFER_SIZE];
+	char filename[MAX_BUFFER_SIZE];
 	char *args[MAX_CMDLINE_ARGUMENTS];
 	pid_t pid;
 	socklen_t sizeOfClientInfo;
 	int pipe_fd[2];
 	sig_action SIGINT_action_parent = { {0} };
+	struct stat st = { 0 };
+	FILE *fp;
+	long byteSize;
+	int length = 0;
 
 	/* Init pipe to redirect cmd output to string 
 	 * Reference - https://stackoverflow.com/questions/50281787/putting-output-of-execvp-into-string
@@ -256,7 +281,7 @@ int startup(char *hostName, int ctrlPort)
 		error("ftserver: error: could not open socket");
 
 	/* Setup socket address to be reusable */
-	if (setsockopt(ctrlSocketFD, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int)) < 0)
+	if (setsockopt(ctrlSocketFD, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
 		error("ftserver: error: failed to set socket options");
 
 	/* Enable the socket to begin listening. Connect socket to port */
@@ -346,7 +371,7 @@ int startup(char *hostName, int ctrlPort)
 				error("ftserver: error: opening socket");
 
 			/* Setup socket address to be reusable */
-			if (setsockopt(dataSocketFD, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int)) < 0)
+			if (setsockopt(dataSocketFD, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
 				error("ftserver: error: failed to set socket options");
 
 			DBG_PRINT2("[ftserver] Data Connection: hostName = %s, dataPort = %d\n", hostName, dataPort);
@@ -372,6 +397,8 @@ int startup(char *hostName, int ctrlPort)
 
 			if (strcmp(buffer, "-l") == 0)
 			{
+				DBG_PRINT("[ftserver] cmd = -l\n");
+
 				/* Fork process to run a separate cmd */
 				pid = fork();
 
@@ -434,184 +461,92 @@ int startup(char *hostName, int ctrlPort)
 			}
 			else if (strcmp(buffer, "-g") == 0)
 			{
-				/* Signal client that server is ready to receive data */
-				sendData(dataSocketFD, "ftserver: -g");
-			}
-		}
-	}
+				DBG_PRINT("[ftserver] Wait for ftclient to send filename\n");
 
-#if 0
-	/* Loop to continue listening for new connections */
-	while (1)
-	{
-		/* Accept a connection, blocking if one is not available until one connects */
-		/* Get the size of the address for the client that will connect */
-		sizeOfClientInfo = sizeof(clientAddress);
-		
-		/* Accept connection */
-		connFD = accept(socketFD, (struct sockaddr *)&clientAddress, &sizeOfClientInfo);
-		
-		if (connFD < 0)
-			error("ERROR on accept");
+				/* Wait for ftclient to send filename */
+				memset(buffer, '\0', sizeof(buffer));
+				receiveData(dataSocketFD, buffer, sizeof(buffer));
 
-#if 0
-		printf("[ftserver] Connected client at port %d\n", ntohs(clientAddress.sin_port));
-#endif
+				/* Save filename */
+				memcpy(filename, buffer, sizeof(buffer));
 
-		/* otp_enc_d must support up to five concurrent socket connections
-		 * running at the same time. Fork a new process that handles 
-		 * encryption.
-		 */
-		pid = fork();
-		
-		switch (pid)
-		{
-			case 0:
-				/* This is a child process */
-				
-				/* 1st packet - Identify client process */
-				receiveData(connFD, buffer, strlen("otp_enc: connection request") + 1);
-
-				/* If client process is otp_enc */
-				if (strcmp(buffer, "otp_enc: connection request") == 0)
+				if (strcmp(filename, "-1/Invalid filename/") == 0)
 				{
-					/* Signal client that server is ready to receive plaintext */
-					sendData(connFD, "otp_enc_d: connection success");
-					
-					/* Receive plaintext size */
-					memset(buffer, '\0', MAX_BUFFER_SIZE);
-					receiveData(connFD, buffer, MAX_BUFFER_SIZE - 1);
-					
-					/* Convert string to int */
-					sizePlaintext = atoi(buffer);
-#if DEBUG
-					printf("sizePlaintext=%d\n", sizePlaintext);
-#endif
-					/* Allocate memory to plaintext. Last element reserved for null terminator. */
-					plaintext = malloc(sizeof(char) * (sizePlaintext + 1));
-					memset(plaintext, '\0', sizeof(char) * (sizePlaintext + 1));
-					
-					/* Signal client that server is ready to receive plaintext */
-					sendData(connFD, "otp_enc_d: ready to receive plaintext");
-					
-					/* Receive plaintext */
-					receiveData(connFD, plaintext, sizePlaintext - 1);
+					DBG_PRINT("ftclient: error: invalid filename\n");
 
-					/* Signal client that server is ready to receive key size */
-					sendData(connFD, "otp_enc_d: ready to receive key size");
-					
-					/* Receive key size */
-					memset(buffer, '\0', MAX_BUFFER_SIZE);
-					receiveData(connFD, buffer, MAX_BUFFER_SIZE - 1);
-					
-					/* Convert string to int */
-					sizeKey = atoi(buffer);
-#if DEBUG
-					printf("sizeKey=%d\n", sizeKey);
-#endif
-					/* Allocate memory to key. Last element reserved for null terminator. */
-					key = malloc(sizeof(char) * (sizeKey + 1));
-					memset(key, '\0', sizeof(char) * (sizeKey + 1));
-					
-					/* Signal client that server is ready to receive key */
-					sendData(connFD, "otp_enc_d: ready to receive key");
-					
-					/* Receive key */
-					receiveData(connFD, key, sizeKey - 1);
+					/* Signal ftclient filename is invalid */
+					sendData(dataSocketFD, "ftclient: error: invalid filename");
+				}
+				else
+				{
+					/* Get file size */
+					fileStatus = stat(filename, &st);
 
-					/* Encrypt plaintext using key */
-					ciphertext = encryptPlaintext(cipherTable, plaintext, sizePlaintext - 1, key, sizeKey - 1);
-					
-					/* Validate ciphertext */
-					if (ciphertext == NULL)
+					if (fileStatus == 0)
 					{
-						status = ERROR_GENERIC;
-					}
-					else
-					{
-						/* Validate ciphertext size
-						 * Note that strlen2+1 adds 1 to account for '\0' char.
-						 */
-						if (sizePlaintext != (strlen2(ciphertext) + 1))
-						{
-							fprintf(stderr, "Error: Plaintext size (%s, %d) "
-								"does not match Ciphertext size (%s, %d)\n", 
-								plaintext, sizePlaintext, ciphertext, 
-								strlen2(ciphertext));
+						/* Convert file size from int to string */
+						memset(buffer, '\0', sizeof(buffer));
+						sprintf(buffer, "%lu", st.st_size);
+						byteSize = st.st_size;
 
-							status = ERROR_GENERIC;
-						}
-						else
+						DBG_PRINT1("[ftserver] File size = %s\n", buffer);
+
+						/* Send file size to ftclient */
+						sendData(dataSocketFD, buffer);
+
+						/* Receive ack from ftclient */
+						memset(buffer, '\0', sizeof(buffer));
+						receiveData(dataSocketFD, buffer, sizeof(buffer));
+
+						if (strcmp(buffer, "ftclient: ack") == 0)
 						{
-							/* Convert ciphertext size from int to string */
-							memset(buffer, '\0', sizeof(buffer));
-							sprintf(buffer, "%d", (int)sizeof(char) * (strlen2(ciphertext) + 1));
+							/* Open requested file with read permissions */
+							fp = fopen(filename, "r");
 							
-							/* Send ciphertext size to client */
-							sendData(connFD, buffer);
-							
-							/* Wait for client to acknowledge ready to receive ciphertext */
-							receiveData(connFD, buffer, strlen("otp_enc: ready to receive ciphertext") + 1);
-#if 0
-							printf("[ftserver] buffer=%s (%d)\n", buffer, strlen(buffer));
-#endif
-							if (1) /*strcmp(buffer, "otp_enc: ready to receive ciphertext") == 0)*/
+							if (!fp)
 							{
-								/* Send ciphertext to client */
-								sendData(connFD, ciphertext);
+								fprintf(stderr, "ftserver: error: failed to open file %s\n", filename);
+								status = ERROR_FILEIO;
 							}
 							else
 							{
-								fprintf(stderr, "Error: otp_enc failed to signal being ready to receive key ciphertext\n");
-								status = ERROR_GENERIC;
+								/* Set filestream pointer to beginning of file */
+								fseek(fp, 0L, SEEK_SET);
+
+								DBG_PRINT1("[ftserver] byteSize = %ld\n", byteSize);
+
+								/* Read entire contents of file into memory */
+								memset(buffer, '\0', sizeof(buffer));
+								fread(buffer, 1, byteSize, fp);
+
+								DBG_PRINT1("[ftserver] buffer = \"%s\"\n", buffer);
+
+								/* Send file to ftclient */
+								sendData(dataSocketFD, buffer);
 							}
+
+							/* Close file */
+							if (fp)
+								fclose(fp);
+						}
+						else
+						{
+							error("ftserver: error: failed to receive ack from ftserver\n");
 						}
 					}
-					
-					/* Cleanup */
-					if (ciphertext)
-						free(ciphertext);
-					
-					if (plaintext)
-						free(plaintext);
-					
-					if (key)
-						free(key);
-				}
-				else
-				{					
-					/* Signal client that server is ready to receive plaintext */
-					sendData(connFD, "otp_enc_d: connection refused");
-				}
-				
-				/* Close the existing socket which is connected to the client */
-				close(connFD);
-				
-				/* Exit child process */
-				exit(status);		
-				break;
-				
-			case -1:
-				/* Error occurred while trying to fork a process */
-				error("ERROR on fork");
-				break;
-				
-			default:
-				/* This is a parent process */
+					else
+					{
+						DBG_PRINT("ftserver: error: could not get file size\n");
 
-				/* Setup parent process to ignore SIGCHLD signal.
-				 * SIGCHLD is ignored by the system and the child process
-				 * is deleted from the process table, so no zombie
-				 * process is created after the child process exits.
-				 */
-				SIGCHLD_action.sa_handler = SIG_IGN;
-				sigfillset(&SIGCHLD_action.sa_mask);
-				SIGCHLD_action.sa_flags = 0;
-				sigaction(SIGCHLD, &SIGCHLD_action, NULL);
-				break;
-		};
+						/* Signal ftclient filename is invalid */
+						sendData(dataSocketFD, "ftclient: error: invalid filename");
+
+						status = ERROR_FILEIO;
+					}
+				}
+			}
+		}
 	}
-#endif
 
 	/* Close sockets */
 	if (ctrlSocketFD)
