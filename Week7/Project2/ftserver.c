@@ -131,7 +131,7 @@ void catchSIGINT(int signo)
 * Description:	Transmits data over the socket to the target host
 * References:	This function was previously developed in CS344
 ******************************************************************************/
-int sendData(int socketFD, char data[MAX_BUFFER_SIZE])
+int sendData(int socketFD, char *data, int bufferSize)
 {
 	int charsWritten;
 	int i, status, maxRetries = 10;
@@ -146,7 +146,7 @@ int sendData(int socketFD, char data[MAX_BUFFER_SIZE])
 		status = INCOMPLETE;
 
 		/* Send message to server. Write to the server. */
-		charsWritten = send(socketFD, data, strlen(data), 0);
+		charsWritten = send(socketFD, data, bufferSize, 0);
 		
 		if (charsWritten < 0)
 		{
@@ -155,7 +155,9 @@ int sendData(int socketFD, char data[MAX_BUFFER_SIZE])
 		}
 		else
 		{
-			DBG_PRINT1("[ftserver] Sent \"%s\"\n", data);
+			if (bufferSize < MAX_BUFFER_SIZE)
+				DBG_PRINT1("[ftserver] Sent \"%s\"\n", data);
+
 			status = COMPLETE;
 			break;
 		}
@@ -230,6 +232,7 @@ int startup(char *hostName, int ctrlPort)
 	struct hostent *ctrlServerHostInfo, *dataServerHostInfo;
 	char buffer[MAX_BUFFER_SIZE];
 	char buffer2[MAX_BUFFER_SIZE];
+	char *pBuffer;
 	char filename[MAX_BUFFER_SIZE];
 	char *args[MAX_CMDLINE_ARGUMENTS];
 	pid_t pid;
@@ -239,8 +242,7 @@ int startup(char *hostName, int ctrlPort)
 	struct stat st = { 0 };
 	FILE *fp;
 	long byteSize;
-	int length = 0;
-
+	
 	/* Init pipe to redirect cmd output to string 
 	 * Reference - https://stackoverflow.com/questions/50281787/putting-output-of-execvp-into-string
 	 */
@@ -316,14 +318,16 @@ int startup(char *hostName, int ctrlPort)
 		if (strcmp(buffer, "-l") != 0 && strcmp(buffer, "-g") != 0)
 		{
 			/* Signal client that server is ready to receive plaintext */
-			sendData(ctrlConnFD, "ftserver: error: invalid command");
+			pBuffer = "ftserver: error: invalid command";
+			sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 		}
 		else
 		{
 			/* Initiate a data socket connection with ftclient */
 
 			/* Send ack */
-			sendData(ctrlConnFD, "ftserver: ack");
+			pBuffer = "ftserver: ack";
+			sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 
 			DBG_PRINT("[ftserver] Waiting to receive port number\n");
 
@@ -335,7 +339,8 @@ int startup(char *hostName, int ctrlPort)
 			dataPort = atoi(buffer2);
 
 			/* Send ack to ftclient */
-			sendData(ctrlConnFD, "ftserver: ack");
+			pBuffer = "ftserver: ack";
+			sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 
 			/* Set up the server address struct */
 			memset((char*)&dataSocketAddr, '\0', sizeof(dataSocketAddr));
@@ -356,7 +361,8 @@ int startup(char *hostName, int ctrlPort)
 				DBG_PRINT1("ftserver: error: could not get host by name %s\n", hostName);
 
 				/* Signal client that server is ready to receive plaintext */
-				sendData(ctrlConnFD, "ftserver: error: could not get host by name");
+				pBuffer = "ftserver: error: could not get host by name";
+				sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 
 				exit(ERR_GETHOSTBYNAME);
 			}
@@ -382,13 +388,15 @@ int startup(char *hostName, int ctrlPort)
 			receiveData(ctrlConnFD, buffer2, sizeof(buffer2));
 
 			/* Send ack to ftclient */
-			sendData(ctrlConnFD, "ftserver: ack");
+			pBuffer = "ftserver: ack";
+			sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 
 			/* Connect to server. Connect socket to address. */
 			if (connect(dataSocketFD, (struct sockaddr*)&dataSocketAddr, sizeof(dataSocketAddr)) < 0)
 			{
 				/* Signal client that server is ready to receive plaintext */
-				sendData(ctrlConnFD, "ftserver: error: could not connect to ftclient");
+				pBuffer = "ftserver: error: could not connect to ftclient";
+				sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 
 				error("ftserver: error: could not connect to socket");
 			}
@@ -455,7 +463,7 @@ int startup(char *hostName, int ctrlPort)
 					/*DBG_PRINT2("size = %d, output = %s\n", size, buffer2);*/
 
 					/* Send output from child process to ftclient */
-					sendData(dataSocketFD, buffer2);
+					sendData(dataSocketFD, buffer2, sizeof(buffer2));
 					break;
 				}
 			}
@@ -475,7 +483,8 @@ int startup(char *hostName, int ctrlPort)
 					DBG_PRINT("ftclient: error: invalid filename\n");
 
 					/* Signal ftclient filename is invalid */
-					sendData(dataSocketFD, "ftclient: error: invalid filename");
+					pBuffer = "ftclient: error: invalid filename";
+					sendData(dataSocketFD, pBuffer, strlen2(pBuffer));
 				}
 				else
 				{
@@ -492,7 +501,7 @@ int startup(char *hostName, int ctrlPort)
 						DBG_PRINT1("[ftserver] File size = %s\n", buffer);
 
 						/* Send file size to ftclient */
-						sendData(dataSocketFD, buffer);
+						sendData(dataSocketFD, buffer, sizeof(buffer));
 
 						/* Receive ack from ftclient */
 						memset(buffer, '\0', sizeof(buffer));
@@ -515,14 +524,22 @@ int startup(char *hostName, int ctrlPort)
 
 								DBG_PRINT1("[ftserver] byteSize = %ld\n", byteSize);
 
+								/* Allocate memory for the file buffer */
+								pBuffer = malloc(sizeof(char) * byteSize);
+
+								if (!pBuffer)
+								{
+									fprintf(stderr, "ftserver: error: out of memory during malloc");
+									exit(ERROR_OOM);
+								}
+
 								/* Read entire contents of file into memory */
-								memset(buffer, '\0', sizeof(buffer));
-								fread(buffer, 1, byteSize, fp);
-
-								DBG_PRINT1("[ftserver] buffer = \"%s\"\n", buffer);
-
+								fread(pBuffer, 1, byteSize, fp);
+#if DEBUG2
+								DBG_PRINT1("[ftserver] pBuffer = \"%s\"\n", pBuffer);
+#endif
 								/* Send file to ftclient */
-								sendData(dataSocketFD, buffer);
+								sendData(dataSocketFD, pBuffer, byteSize);
 							}
 
 							/* Close file */
@@ -539,7 +556,8 @@ int startup(char *hostName, int ctrlPort)
 						DBG_PRINT("ftserver: error: could not get file size\n");
 
 						/* Signal ftclient filename is invalid */
-						sendData(dataSocketFD, "ftclient: error: invalid filename");
+						pBuffer = "ftclient: error: invalid filename";
+						sendData(dataSocketFD, pBuffer, strlen2(pBuffer));
 
 						status = ERROR_FILEIO;
 					}

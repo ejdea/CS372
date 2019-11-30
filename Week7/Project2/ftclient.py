@@ -62,11 +62,35 @@ def receive(conn):
 #------------------------------------------------------------------------------
 # Class:       receiveFile
 # Description: Receives a file from the network source
+# Reference:   https://stackoverflow.com/questions/20007319/how-to-do-a-large-text-file-transfer-in-python
 #------------------------------------------------------------------------------
-def receiveFile(conn):
-	data = conn.recv(MAX_BUFFER_SIZE)
-	dbg_print("received \"" + data + "\"")
-	return data
+def receiveFile(conn, fileSize):
+	charsRead = 0
+	charsReadTotal = 0
+	buffer = ""
+
+	# Keep receiving file data until full file is transferred
+	while charsRead < fileSize:
+		data = conn.recv(MAX_BUFFER_SIZE)
+
+		if not data:
+			# If received no data, then end loop
+			break
+		else:
+			# Get size of packet transferred
+			charsRead = len(data)
+
+			# Update total file size transferred
+			charsReadTotal += charsRead
+
+			# Append data received to buffer
+			buffer += data
+
+			dbg_print("received " + str(charsReadTotal) + "/" + str(fileSize))
+
+	dbg_print("[receiveFile] buffer = " + buffer)
+
+	return buffer
 
 #------------------------------------------------------------------------------
 # Class:       startup
@@ -196,18 +220,18 @@ def startup():
 						send(dataConn, filename)
 
 						# Receive file payload size
-						payload = receive(dataConn)
+						fileSize = receive(dataConn)
 
-						dbg_print("payload = " + payload)
+						dbg_print("fileSize = " + fileSize)
 
 						# Send ack to ftserver
 						send(dataConn, "ftclient: ack")
 
 						# Wait for ftserver to send file
 						dbg_print("[ftclient] Wait for ftserver to send file");
-						data = receive(dataConn)
+						data = receiveFile(dataConn, fileSize)
 
-						dbg_print("data = " + data)
+						#dbg_print("data = " + data)
 		elif data == "ftserver: error: could not connect to ftclient":
 			print("ftclient: error: could not connect to ftclient")
 		else:
