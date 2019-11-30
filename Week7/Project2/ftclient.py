@@ -11,6 +11,7 @@
 import socket
 import sys
 import signal
+import os.path
 
 DEBUG 					= 1
 
@@ -62,7 +63,7 @@ def receive(conn):
 #------------------------------------------------------------------------------
 # Class:       receiveFile
 # Description: Receives a file from the network source
-# Reference:   https://stackoverflow.com/questions/20007319/how-to-do-a-large-text-file-transfer-in-python
+# Reference:   This function is based on Edmund's CS344 project
 #------------------------------------------------------------------------------
 def receiveFile(conn, fileSize):
 	charsRead = 0
@@ -88,7 +89,7 @@ def receiveFile(conn, fileSize):
 
 			dbg_print("received " + str(charsReadTotal) + "/" + str(fileSize))
 
-	dbg_print("[receiveFile] buffer = " + buffer)
+	#dbg_print("[receiveFile] buffer = " + buffer)
 
 	return buffer
 
@@ -232,6 +233,29 @@ def startup():
 						data = receiveFile(dataConn, fileSize)
 
 						#dbg_print("data = " + data)
+
+						# Check if file exists already
+						if os.path.exists(filename):
+							choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
+							while not choice or (choice != "y" and choice != "n"):
+								choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
+
+						if choice == "y":
+							# Save data to file
+							fpFile = open(filename, "w")
+
+							# Write data to file
+							fpFile.write(data)
+
+							# Output status
+							print("transfer complete")
+
+							# Cleanup
+							if (fpFile):
+								fpFile.close()
+						elif choice == "n":
+							print("Skipping file write since user chose not to overwrite")
+
 		elif data == "ftserver: error: could not connect to ftclient":
 			print("ftclient: error: could not connect to ftclient")
 		else:
