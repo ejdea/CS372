@@ -48,7 +48,8 @@
 #define ERROR_SEND					6
 #define ERROR_FORK					7
 #define ERROR_EXEC					8
-#define ERR_GETHOSTBYNAME			9
+#define ERROR_GETHOSTBYNAME			9
+#define ERROR_SOCKET				10
 
 /* Debug print macros */
 #if DEBUG
@@ -161,7 +162,7 @@ int sendData(int socketFD, char *data, int bufferSize)
 
 		/* Send message to server. Write to the server. */
 		charsWritten = send(socketFD, data, bufferSize, 0);
-		
+
 		if (charsWritten < 0)
 		{
 			error("ftserver: error writing to socket");
@@ -197,13 +198,13 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 	for (i = 0; i < maxRetries; i++)
 	{
 		status = INCOMPLETE;
-		
+
 		/* Clear buffer */
 		memset(buffer, '\0', bufferSize);
-		
+
 		/* Read data from the socket, leaving \0 at end */
 		charsRead = recv(socketFD, buffer, bufferSize - 1, 0);
-		
+
 		if (charsRead < 0)
 		{
 			status = INCOMPLETE;
@@ -221,6 +222,110 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 }
 
 /******************************************************************************
+* Name:			initiateContact
+* Arguments:	[in] socket file descriptor
+* Return:		N/A
+* Description:	Initiates a connection request
+******************************************************************************/
+int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostName)
+{
+	int status = ERROR_NONE;
+	char* pBuffer;
+	char buffer2[MAX_BUFFER_SIZE];
+	int enable = 1;
+	struct hostent *dataServerHostInfo;
+	struct sockaddr_in dataSocketAddr;
+
+	/* Set up the server address struct */
+	memset((char*)&dataSocketAddr, '\0', sizeof(dataSocketAddr));
+
+	/* Create a network-capable socket */
+	dataSocketAddr.sin_family = AF_INET;
+
+	/* Store the port number */
+	dataSocketAddr.sin_port = htons(dataPort);
+
+	DBG_PRINT2("[ftserver] dataPort = %d, dataSocketAddr.sin_port = %hu\n", dataPort, dataSocketAddr.sin_port);
+
+	/* Convert the machine name into a special form of address */
+	dataServerHostInfo = gethostbyname(hostName);
+
+	if (dataServerHostInfo == NULL)
+	{
+		DBG_PRINT1("ftserver: error: could not get host by name %s\n", hostName);
+
+		/* Signal client that server is ready to receive plaintext */
+		pBuffer = "ftserver: error: could not get host by name";
+		sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
+
+		exit(ERROR_GETHOSTBYNAME);
+	}
+
+	/* Copy in the address */
+	memcpy((char*)&dataSocketAddr.sin_addr.s_addr, (char*)dataServerHostInfo->h_addr, dataServerHostInfo->h_length);
+
+	/* Create the socket */
+	(*dataSocketFD) = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (*dataSocketFD < 0)
+	{
+		error("ftserver: error: opening socket");
+		return ERROR_SOCKET;
+	}
+
+	/* Setup socket address to be reusable */
+	if (setsockopt(*dataSocketFD, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+		error("ftserver: error: failed to set socket options");
+
+	DBG_PRINT2("[ftserver] Data Connection: hostName = %s, dataPort = %d\n", hostName, dataPort);
+	DBG_PRINT("[ftserver] Waiting to receive ftclient connection ready status\n");
+
+	/* Wait for ftclient to send connection ready status */
+	memset(buffer2, '\0', sizeof(buffer2));
+	receiveData(ctrlConnFD, buffer2, sizeof(buffer2));
+
+	/* Send ack to ftclient */
+	pBuffer = "ftserver: ack";
+	sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
+
+	/* Connect to server. Connect socket to address. */
+	if (connect(*dataSocketFD, (struct sockaddr*)&dataSocketAddr, sizeof(dataSocketAddr)) < 0)
+	{
+		/* Signal client that server is ready to receive plaintext */
+		pBuffer = "ftserver: error: could not connect to ftclient";
+		sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
+
+		error("ftserver: error: could not connect to socket");
+
+		status = ERROR_SOCKET;
+	}
+
+	return status;
+}
+
+/******************************************************************************
+* Name:			makeRequest
+* Arguments:	[in] socket file descriptor
+* Return:		N/A
+* Description:	Makes a command request
+******************************************************************************/
+void makeRequest(int socketFD)
+{
+
+}
+
+/******************************************************************************
+* Name:			handleRequest
+* Arguments:	[in] socket file descriptor
+* Return:		N/A
+* Description:	Handles a command request
+******************************************************************************/
+void handleRequest(int socketFD)
+{
+
+}
+
+/******************************************************************************
 * Name:			startup
 * Arguments:	N/A
 * Return:		Exit Code
@@ -232,8 +337,8 @@ int startup(char *hostName, int ctrlPort)
 	int status = ERROR_NONE, fileStatus = ERROR_NONE;
 	int dataPort = 0;
 	int enable = 1;
-	struct sockaddr_in ctrlSocketAddr, dataSocketAddr;
-	struct hostent *ctrlServerHostInfo, *dataServerHostInfo;
+	struct sockaddr_in ctrlSocketAddr;
+	struct hostent *ctrlServerHostInfo;
 	char buffer[MAX_BUFFER_SIZE];
 	char buffer2[MAX_BUFFER_SIZE];
 	char *pBuffer;
@@ -273,7 +378,7 @@ int startup(char *hostName, int ctrlPort)
 	if (ctrlServerHostInfo == NULL)
 	{
 		fprintf(stderr, "ftserver: error: no such host\n");
-		exit(ERR_GETHOSTBYNAME);
+		exit(ERROR_GETHOSTBYNAME);
 	}
 	
 	/* Copy in the address */
@@ -330,8 +435,6 @@ int startup(char *hostName, int ctrlPort)
 			}
 			else
 			{
-				/* Initiate a data socket connection with ftclient */
-
 				/* Send ack */
 				pBuffer = "ftserver: ack";
 				sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
@@ -349,63 +452,13 @@ int startup(char *hostName, int ctrlPort)
 				pBuffer = "ftserver: ack";
 				sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 
-				/* Set up the server address struct */
-				memset((char*)&dataSocketAddr, '\0', sizeof(dataSocketAddr));
+				/* Initiate a data socket connection with ftclient */
+				status = initiateContact(&dataSocketFD, ctrlConnFD, dataPort, hostName);
 
-				/* Create a network-capable socket */
-				dataSocketAddr.sin_family = AF_INET;
-
-				/* Store the port number */
-				dataSocketAddr.sin_port = htons(dataPort);
-
-				DBG_PRINT2("[ftserver] dataPort = %d, dataSocketAddr.sin_port = %hu\n", dataPort, dataSocketAddr.sin_port);
-
-				/* Convert the machine name into a special form of address */
-				dataServerHostInfo = gethostbyname(hostName);
-
-				if (dataServerHostInfo == NULL)
+				if (status != ERROR_NONE)
 				{
-					DBG_PRINT1("ftserver: error: could not get host by name %s\n", hostName);
-
-					/* Signal client that server is ready to receive plaintext */
-					pBuffer = "ftserver: error: could not get host by name";
-					sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
-
-					exit(ERR_GETHOSTBYNAME);
-				}
-
-				/* Copy in the address */
-				memcpy((char*)&dataSocketAddr.sin_addr.s_addr, (char*)dataServerHostInfo->h_addr, dataServerHostInfo->h_length);
-
-				/* Create the socket */
-				dataSocketFD = socket(AF_INET, SOCK_STREAM, 0);
-
-				if (dataSocketFD < 0)
-					error("ftserver: error: opening socket");
-
-				/* Setup socket address to be reusable */
-				if (setsockopt(dataSocketFD, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-					error("ftserver: error: failed to set socket options");
-
-				DBG_PRINT2("[ftserver] Data Connection: hostName = %s, dataPort = %d\n", hostName, dataPort);
-				DBG_PRINT("[ftserver] Waiting to receive ftclient connection ready status\n");
-
-				/* Wait for ftclient to send connection ready status */
-				memset(buffer2, '\0', sizeof(buffer2));
-				receiveData(ctrlConnFD, buffer2, sizeof(buffer2));
-
-				/* Send ack to ftclient */
-				pBuffer = "ftserver: ack";
-				sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
-
-				/* Connect to server. Connect socket to address. */
-				if (connect(dataSocketFD, (struct sockaddr*)&dataSocketAddr, sizeof(dataSocketAddr)) < 0)
-				{
-					/* Signal client that server is ready to receive plaintext */
-					pBuffer = "ftserver: error: could not connect to ftclient";
-					sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
-
-					error("ftserver: error: could not connect to socket");
+					printf("ftserver: error: could not initiate contact with ftclient\n");
+					exit(status);
 				}
 
 				DBG_PRINT2("[ftserver] Established data connection with %s:%d\n", hostName, dataPort);
@@ -463,7 +516,7 @@ int startup(char *hostName, int ctrlPort)
 						memset(buffer2, '\0', sizeof(buffer2));
 						read(pipe_fd[0], buffer2, MAX_BUFFER_SIZE);
 
-						DBG_PRINT1("buffer2 = %s\n", buffer2);
+						DBG_PRINT2("dataSocketFD = %d, buffer2 =\n%s\n", dataSocketFD, buffer2);
 
 						/* Send output from child process to ftclient */
 						sendData(dataSocketFD, buffer2, sizeof(buffer2));
