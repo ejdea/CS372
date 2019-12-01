@@ -334,7 +334,7 @@ int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostN
 * Return:		N/A
 * Description:	Handles a command request
 ******************************************************************************/
-int handleRequest(int dataSocketFd, char cmd[MAX_BUFFER_SIZE])
+int handleRequest(int dataSocketFd, int ctrlSocketFd, char cmd[MAX_BUFFER_SIZE])
 {
 	pid_t pid;
 	char *args[MAX_CMDLINE_ARGUMENTS];
@@ -423,7 +423,7 @@ int handleRequest(int dataSocketFd, char cmd[MAX_BUFFER_SIZE])
 
 			/* Signal ftclient filename is invalid */
 			pBuffer = "ftclient: error: file not found";
-			sendData(dataSocketFd, pBuffer, strlen2(pBuffer));
+			sendData(ctrlSocketFd, pBuffer, strlen2(pBuffer));
 		}
 		else
 		{
@@ -493,7 +493,7 @@ int handleRequest(int dataSocketFd, char cmd[MAX_BUFFER_SIZE])
 
 				/* Signal ftclient filename is invalid */
 				pBuffer = "ftclient: error: file not found";
-				sendData(dataSocketFd, pBuffer, strlen2(pBuffer));
+				sendData(ctrlSocketFd, pBuffer, strlen2(pBuffer));
 
 				status = ERROR_FILEIO;
 			}
@@ -654,7 +654,7 @@ int startup(int ctrlPort)
 
 				DBG_PRINT2("[ftserver] Established data connection with %s:%d\n", clientHostname, dataPort);
 
-				status = handleRequest(dataSocketFD, buffer);
+				status = handleRequest(dataSocketFD, ctrlSocketFD, buffer);
 
 				if (status != ERROR_NONE)
 					error(ERROR_GENERIC, "ftserver: error: handleRequest returned an status code\n");
