@@ -274,7 +274,7 @@ def startup():
 				if data == "ftserver: ack":
 					dbg_print("[ftclient] Received connection request")
 
-				# Send cmd request to ftserver
+				# Send cmd to ftserver
 				makeRequest(cmd, dataConn, filename)
 
 		elif data == "ftserver: error: could not connect to ftclient":
