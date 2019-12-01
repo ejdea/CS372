@@ -13,7 +13,7 @@ import sys
 import signal
 import os.path
 
-DEBUG 					= 1
+DEBUG 					= 0
 
 # Macros
 MAX_BUFFER_SIZE 		= 4096
@@ -125,7 +125,7 @@ def makeRequest(cmd, ctrlSockFD, dataConn, hostname, dataPort, filename):
 		# Receive connection request
 		data = receiveData(dataConn, 0, 0)
 
-		print("Receiving directory structure from " + hostname + ":" + dataPort)
+		print("Receiving directory structure from " + hostname + ":" + str(dataPort))
 
 		# Output directory structure
 		print(data)
@@ -136,7 +136,7 @@ def makeRequest(cmd, ctrlSockFD, dataConn, hostname, dataPort, filename):
 		# Receive file payload size
 		fileSize = receiveData(dataConn, 0, 0)
 
-		dbg_print("fileSize = " + fileSize)
+		dbg_print("fileSize = " + str(fileSize))
 
 		# Send ack to ftserver
 		sendData(dataConn, "ftclient: ack")
@@ -173,7 +173,7 @@ def makeRequest(cmd, ctrlSockFD, dataConn, hostname, dataPort, filename):
 				if (fpFile):
 					fpFile.close()
 			elif choice == "n":
-				print("Skipping file write since user chose not to overwrite")
+				print("Skipped file overwrite")
 
 			# Output status
 			print("transfer complete")
@@ -282,6 +282,7 @@ def startup():
 
 				# Accept connection requets
 				dataConn, dataAddr = dataSockFD.accept()
+				dbg_print("[ftclient] Accepted data connection request")
 
 				# Wait for ack response from ftserver
 				dbg_print("[ftclient] Wait for ack response from ftserver");

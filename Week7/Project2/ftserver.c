@@ -22,7 +22,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define DEBUG					1
+#define DEBUG					0
 
 /* Global macros */
 #define MAX_BUFFER_SIZE			4096
@@ -334,7 +334,7 @@ int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostN
 * Return:		N/A
 * Description:	Handles a command request
 ******************************************************************************/
-int handleRequest(int dataSocketFd, int ctrlSocketFd, int dataPort, char clientHostname[MAX_BUFFER_SIZE], char cmd[MAX_BUFFER_SIZE])
+int handleRequest(int dataSocketFd, int ctrlSocketFd, int ctrlPort, int dataPort, char clientHostname[MAX_BUFFER_SIZE], char cmd[MAX_BUFFER_SIZE])
 {
 	pid_t pid;
 	char *args[MAX_CMDLINE_ARGUMENTS];
@@ -418,7 +418,7 @@ int handleRequest(int dataSocketFd, int ctrlSocketFd, int dataPort, char clientH
 
 		/* Save filename */
 		memcpy(filename, buffer, sizeof(buffer));
-
+		
 		if (strcmp(filename, "-1/Invalid filename/") == 0)
 		{
 			DBG_PRINT("ftclient: error: file not found\n");
@@ -431,12 +431,16 @@ int handleRequest(int dataSocketFd, int ctrlSocketFd, int dataPort, char clientH
 			memset(buffer, '\0', sizeof(buffer));
 			receiveData(dataSocketFd, buffer, sizeof(buffer));
 
+			printf("File not found. Sending error message to %s:%d\n", clientHostname, ctrlPort);
+
 			/* Signal ftclient filename is invalid */
-			pBuffer = "ftclient: error: file not found";
-			sendData(ctrlSocketFd, pBuffer, sizeof(char) * strlen2(pBuffer));
+			sprintf(buffer, "%s:%d says FILE NOT FOUND", clientHostname, ctrlPort);
+			sendData(ctrlSocketFd, buffer, strlen(buffer));
 		}
 		else
 		{
+			printf("File \"%s\" requested on port %d\n", filename, dataPort);
+
 			/* Get file size */
 			fileStatus = stat(filename, &st);
 
@@ -484,6 +488,8 @@ int handleRequest(int dataSocketFd, int ctrlSocketFd, int dataPort, char clientH
 #if DEBUG2
 						DBG_PRINT1("[ftserver] pBuffer = \"%s\"\n", pBuffer);
 #endif
+						printf("Sending \"%s\" to %s:%d\n", filename, clientHostname, dataPort);
+
 						/* Send file to ftclient */
 						sendData(dataSocketFd, pBuffer, byteSize);
 					}
@@ -499,18 +505,26 @@ int handleRequest(int dataSocketFd, int ctrlSocketFd, int dataPort, char clientH
 			}
 			else
 			{
-				DBG_PRINT("ftserver: error: file not found\n");
+				DBG_PRINT("ftclient: error: file not found\n");
+
+				/* Send ftclient filename is invalid */
+				pBuffer = "ftclient: error";
+				sendData(dataSocketFd, pBuffer, sizeof(char) * strlen2(pBuffer));
+
+				/* Receive ack from ftclient */
+				memset(buffer, '\0', sizeof(buffer));
+				receiveData(dataSocketFd, buffer, sizeof(buffer));
+
+				printf("File not found. Sending error message to %s:%d\n", clientHostname, ctrlPort);
 
 				/* Signal ftclient filename is invalid */
-				pBuffer = "ftclient: error: file not found";
-				sendData(ctrlSocketFd, pBuffer, strlen2(pBuffer));
-
-				status = ERROR_FILEIO;
+				sprintf(buffer, "%s:%d says FILE NOT FOUND", clientHostname, ctrlPort);
+				sendData(ctrlSocketFd, buffer, strlen(buffer));
 			}
 		}
 	}
 
-	return status;
+	return ERROR_NONE;
 }
 
 /******************************************************************************
@@ -662,7 +676,7 @@ int startup(int ctrlPort)
 
 				DBG_PRINT2("[ftserver] Established data connection with %s:%d\n", clientHostname, dataPort);
 
-				handleRequest(dataSocketFD, ctrlConnFD, dataPort, clientHostname, buffer);
+				handleRequest(dataSocketFD, ctrlConnFD, ctrlPort, dataPort, clientHostname, buffer);
 
 				/* ftserve closes the data connection after directory or file transfer */
 				if (dataSocketFD)
