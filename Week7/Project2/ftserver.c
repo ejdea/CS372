@@ -76,10 +76,36 @@ static int pipe_fd[2];
 * Return:		void
 * Description:	Error function used for reporting issues
 ******************************************************************************/
-void error(const char *msg)
+void error(int exitCode, const char *msg)
 {
+	exitStatus = 1;
+
+	/* Close pipe */
+	close(pipe_fd[1]);
+
+	/* Close sockets */
+	if (ctrlSocketFD)
+	{
+		DBG_PRINT("Closing ctrlSocketFD\n");
+		close(ctrlSocketFD);
+	}
+
+	if (ctrlConnFD)
+	{
+		DBG_PRINT("Closing ctrlConnFD\n");
+		close(ctrlConnFD);
+	}
+
+	if (dataSocketFD)
+	{
+		DBG_PRINT("Closing dataSocketFD\n");
+		close(dataSocketFD);
+	}
+
+	/* Output error msg*/
 	perror(msg);
-	exit(ERROR_GENERIC);
+
+	exit(exitCode);
 }
 
 /******************************************************************************
@@ -165,7 +191,7 @@ int sendData(int socketFD, char *data, int bufferSize)
 
 		if (charsWritten < 0)
 		{
-			error("ftserver: error writing to socket");
+			error(ERROR_SOCKET, "ftserver: error writing to socket");
 			status = INCOMPLETE;
 		}
 		else
@@ -208,7 +234,7 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 		if (charsRead < 0)
 		{
 			status = INCOMPLETE;
-			error("ftserver: error reading from socket");
+			error(ERROR_SOCKET, "ftserver: error reading from socket");
 		}
 		else
 		{
@@ -252,13 +278,11 @@ int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostN
 
 	if (dataServerHostInfo == NULL)
 	{
-		DBG_PRINT1("ftserver: error: could not get host by name %s\n", hostName);
-
 		/* Signal client that server is ready to receive plaintext */
 		pBuffer = "ftserver: error: could not get host by name";
 		sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 
-		exit(ERROR_GETHOSTBYNAME);
+		error(ERROR_GETHOSTBYNAME, "ftserver: error: could not get host by name\n");
 	}
 
 	/* Copy in the address */
@@ -269,13 +293,13 @@ int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostN
 
 	if (*dataSocketFD < 0)
 	{
-		error("ftserver: error: opening socket");
+		error(ERROR_SOCKET, "ftserver: error: opening socket");
 		return ERROR_SOCKET;
 	}
 
 	/* Setup socket address to be reusable */
 	if (setsockopt(*dataSocketFD, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-		error("ftserver: error: failed to set socket options");
+		error(ERROR_SOCKET, "ftserver: error: failed to set socket options");
 
 	DBG_PRINT2("[ftserver] Data Connection: hostName = %s, dataPort = %d\n", hostName, dataPort);
 	DBG_PRINT("[ftserver] Waiting to receive ftclient connection ready status\n");
@@ -295,7 +319,7 @@ int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostN
 		pBuffer = "ftserver: error: could not connect to ftclient";
 		sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 
-		error("ftserver: error: could not connect to socket");
+		error(ERROR_SOCKET, "ftserver: error: could not connect to socket");
 
 		status = ERROR_SOCKET;
 	}
@@ -320,9 +344,173 @@ void makeRequest(int socketFD)
 * Return:		N/A
 * Description:	Handles a command request
 ******************************************************************************/
-void handleRequest(int socketFD)
+int handleRequest(int dataSocketFd, char cmd[MAX_BUFFER_SIZE])
 {
+	pid_t pid;
+	char *args[MAX_CMDLINE_ARGUMENTS];
+	int status = ERROR_NONE, fileStatus = ERROR_NONE;
+	char buffer[MAX_BUFFER_SIZE];
+	char buffer2[MAX_BUFFER_SIZE];
+	char filename[MAX_BUFFER_SIZE];
+	char *pBuffer;
+	FILE *fp;
+	long byteSize;
+	struct stat st = { 0 };
 
+	if (strcmp(cmd, "-l") == 0)
+	{
+		DBG_PRINT("[ftserver] cmd = -l\n");
+
+		/* Fork process to run a separate cmd */
+		pid = fork();
+
+		switch (pid)
+		{
+		case 0:
+			/* This is the Child process. Run the requested cmd. */
+
+			/* Setup arguments */
+			memset(args, 0, sizeof(args));
+			args[0] = "ls";
+			/*args[1] = "-l";*/
+
+			/* Capture cmd output by redirect output to stdout */
+			dup2(pipe_fd[1], FD_STDOUT);
+			dup2(pipe_fd[1], FD_STDERR);
+
+			/* Run cmd */
+			status = execvp(args[0], args);
+
+			/* Validate execvp result */
+			if (status == -1)
+			{
+				/* Output error */
+				fprintf(stderr, "%s: no such file or directory\n", args[0]);
+				fflush(stderr);
+
+				/* Set error status */
+				error(ERROR_SOCKET, "ftserver: error: failed to run forked process");
+			}
+			break;
+
+		case -1:
+			error(ERROR_FORK, "ftserver: error: failed to fork process");
+			break;
+
+		default:
+			/* This is the Parent process. Wait for child process to finish and
+			 * cmd output.
+			 */
+
+			 /* Block parent process until child process ends */
+			waitpid(-1, &status, 0);
+
+			/* Read redirected output from child process */
+			memset(buffer2, '\0', sizeof(buffer2));
+			read(pipe_fd[0], buffer2, MAX_BUFFER_SIZE);
+
+			DBG_PRINT2("dataSocketFd = %d, buffer2 =\n%s\n", dataSocketFd, buffer2);
+
+			/* Send output from child process to ftclient */
+			sendData(dataSocketFd, buffer2, sizeof(buffer2));
+			break;
+		}
+	}
+	else if (strcmp(cmd, "-g") == 0)
+	{
+		DBG_PRINT("[ftserver] Wait for ftclient to send filename\n");
+
+		/* Wait for ftclient to send filename */
+		memset(buffer, '\0', sizeof(buffer));
+		receiveData(dataSocketFd, buffer, sizeof(buffer));
+
+		/* Save filename */
+		memcpy(filename, buffer, sizeof(buffer));
+
+		if (strcmp(filename, "-1/Invalid filename/") == 0)
+		{
+			DBG_PRINT("ftclient: error: file not found\n");
+
+			/* Signal ftclient filename is invalid */
+			pBuffer = "ftclient: error: file not found";
+			sendData(dataSocketFd, pBuffer, strlen2(pBuffer));
+		}
+		else
+		{
+			/* Get file size */
+			fileStatus = stat(filename, &st);
+
+			if (fileStatus == ERROR_NONE)
+			{
+				/* Convert file size from int to string */
+				memset(buffer, '\0', sizeof(buffer));
+				sprintf(buffer, "%lu", st.st_size);
+				byteSize = st.st_size;
+
+				DBG_PRINT1("[ftserver] File size = %s\n", buffer);
+
+				/* Send file size to ftclient */
+				sendData(dataSocketFd, buffer, sizeof(buffer));
+
+				/* Receive ack from ftclient */
+				memset(buffer, '\0', sizeof(buffer));
+				receiveData(dataSocketFd, buffer, sizeof(buffer));
+
+				if (strcmp(buffer, "ftclient: ack") == 0)
+				{
+					/* Open requested file with read permissions */
+					fp = fopen(filename, "r");
+
+					if (!fp)
+					{
+						fprintf(stderr, "ftserver: error: failed to open file %s\n", filename);
+						status = ERROR_FILEIO;
+					}
+					else
+					{
+						/* Set filestream pointer to beginning of file */
+						fseek(fp, 0L, SEEK_SET);
+
+						DBG_PRINT1("[ftserver] byteSize = %ld\n", byteSize);
+
+						/* Allocate memory for the file buffer */
+						pBuffer = malloc(sizeof(char) * byteSize);
+
+						if (!pBuffer)
+							error(ERROR_OOM, "ftserver: error: out of memory during malloc\n");
+
+						/* Read entire contents of file into memory */
+						fread(pBuffer, 1, byteSize, fp);
+#if DEBUG2
+						DBG_PRINT1("[ftserver] pBuffer = \"%s\"\n", pBuffer);
+#endif
+						/* Send file to ftclient */
+						sendData(dataSocketFd, pBuffer, byteSize);
+					}
+
+					/* Close file */
+					if (fp)
+						fclose(fp);
+				}
+				else
+				{
+					error(ERROR_SOCKET, "ftserver: error: failed to receive ack from ftserver\n");
+				}
+			}
+			else
+			{
+				DBG_PRINT("ftserver: error: file not found\n");
+
+				/* Signal ftclient filename is invalid */
+				pBuffer = "ftclient: error: file not found";
+				sendData(dataSocketFd, pBuffer, strlen2(pBuffer));
+
+				status = ERROR_FILEIO;
+			}
+		}
+	}
+
+	return status;
 }
 
 /******************************************************************************
@@ -334,7 +522,7 @@ void handleRequest(int socketFD)
 ******************************************************************************/
 int startup(char *hostName, int ctrlPort)
 {
-	int status = ERROR_NONE, fileStatus = ERROR_NONE;
+	int status = ERROR_NONE;
 	int dataPort = 0;
 	int enable = 1;
 	struct sockaddr_in ctrlSocketAddr;
@@ -342,14 +530,8 @@ int startup(char *hostName, int ctrlPort)
 	char buffer[MAX_BUFFER_SIZE];
 	char buffer2[MAX_BUFFER_SIZE];
 	char *pBuffer;
-	char filename[MAX_BUFFER_SIZE];
-	char *args[MAX_CMDLINE_ARGUMENTS];
-	pid_t pid;
 	socklen_t sizeOfClientInfo;
 	sig_action SIGINT_action_parent = { {0} };
-	struct stat st = { 0 };
-	FILE *fp;
-	long byteSize;
 	
 	/* Init pipe to redirect cmd output to string 
 	 * Reference - https://stackoverflow.com/questions/50281787/putting-output-of-execvp-into-string
@@ -377,8 +559,7 @@ int startup(char *hostName, int ctrlPort)
 	
 	if (ctrlServerHostInfo == NULL)
 	{
-		fprintf(stderr, "ftserver: error: no such host\n");
-		exit(ERROR_GETHOSTBYNAME);
+		error(ERROR_GETHOSTBYNAME, "ftserver: error: no such host\n");
 	}
 	
 	/* Copy in the address */
@@ -388,15 +569,15 @@ int startup(char *hostName, int ctrlPort)
 	ctrlSocketFD = socket(AF_INET, SOCK_STREAM, 0);
 	
 	if (ctrlSocketFD < 0)
-		error("ftserver: error: could not open socket");
+		error(ERROR_SOCKET, "ftserver: error: could not open socket");
 
 	/* Setup socket address to be reusable */
 	if (setsockopt(ctrlSocketFD, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-		error("ftserver: error: failed to set socket options");
+		error(ERROR_SOCKET, "ftserver: error: failed to set socket options");
 
 	/* Enable the socket to begin listening. Connect socket to port */
 	if (bind(ctrlSocketFD, (struct sockaddr *)&ctrlSocketAddr, sizeof(ctrlSocketAddr)) < 0)
-		error("ftserver: error: could not bind socket to port");
+		error(ERROR_SOCKET, "ftserver: error: could not bind socket to port");
 	
 	DBG_PRINT2("[ftserver] Ctrl Connection: hostName = %s, ctrlPort = %d\n", hostName, ctrlPort);
 
@@ -411,7 +592,7 @@ int startup(char *hostName, int ctrlPort)
 		ctrlConnFD = accept(ctrlSocketFD, (struct sockaddr *)&ctrlSocketAddr, &sizeOfClientInfo);
 
 		if (!exitStatus && ctrlConnFD < 0)
-			error("ftserver: error: could not accept connection");
+			error(ERROR_CONNECTION_REFUSED, "ftserver: error: could not accept connection");
 
 		if (exitStatus)
 			exit(ERROR_NONE);
@@ -456,169 +637,14 @@ int startup(char *hostName, int ctrlPort)
 				status = initiateContact(&dataSocketFD, ctrlConnFD, dataPort, hostName);
 
 				if (status != ERROR_NONE)
-				{
-					printf("ftserver: error: could not initiate contact with ftclient\n");
-					exit(status);
-				}
+					error(ERROR_SOCKET, "ftserver: error: could not initiate contact with ftclient\n");
 
 				DBG_PRINT2("[ftserver] Established data connection with %s:%d\n", hostName, dataPort);
 
-				if (strcmp(buffer, "-l") == 0)
-				{
-					DBG_PRINT("[ftserver] cmd = -l\n");
+				status = handleRequest(dataSocketFD, buffer);
 
-					/* Fork process to run a separate cmd */
-					pid = fork();
-
-					switch (pid)
-					{
-					case 0:
-						/* This is the Child process. Run the requested cmd. */
-
-						/* Setup arguments */
-						memset(args, 0, sizeof(args));
-						args[0] = "ls";
-						/*args[1] = "-l";*/
-
-						/* Capture cmd output by redirect output to stdout */
-						dup2(pipe_fd[1], FD_STDOUT);
-						dup2(pipe_fd[1], FD_STDERR);
-
-						/* Run cmd */
-						status = execvp(args[0], args);
-
-						/* Validate execvp result */
-						if (status == -1)
-						{
-							/* Output error */
-							fprintf(stderr, "%s: no such file or directory\n", args[0]);
-							fflush(stderr);
-
-							/* Set error status */
-							error("ftserver: error: failed to run forked process");
-							return ERROR_EXEC;
-						}
-						break;
-
-					case -1:
-						error("ftserver: error: failed to fork process");
-						return ERROR_FORK;
-
-					default:
-						/* This is the Parent process. Wait for child process to finish and
-						 * cmd output.
-						 */
-
-						 /* Block parent process until child process ends */
-						waitpid(-1, &status, 0);
-
-						/* Read redirected output from child process */
-						memset(buffer2, '\0', sizeof(buffer2));
-						read(pipe_fd[0], buffer2, MAX_BUFFER_SIZE);
-
-						DBG_PRINT2("dataSocketFD = %d, buffer2 =\n%s\n", dataSocketFD, buffer2);
-
-						/* Send output from child process to ftclient */
-						sendData(dataSocketFD, buffer2, sizeof(buffer2));
-						break;
-					}
-				}
-				else if (strcmp(buffer, "-g") == 0)
-				{
-					DBG_PRINT("[ftserver] Wait for ftclient to send filename\n");
-
-					/* Wait for ftclient to send filename */
-					memset(buffer, '\0', sizeof(buffer));
-					receiveData(dataSocketFD, buffer, sizeof(buffer));
-
-					/* Save filename */
-					memcpy(filename, buffer, sizeof(buffer));
-
-					if (strcmp(filename, "-1/Invalid filename/") == 0)
-					{
-						DBG_PRINT("ftclient: error: file not found\n");
-
-						/* Signal ftclient filename is invalid */
-						pBuffer = "ftclient: error: file not found";
-						sendData(dataSocketFD, pBuffer, strlen2(pBuffer));
-					}
-					else
-					{
-						/* Get file size */
-						fileStatus = stat(filename, &st);
-
-						if (fileStatus == 0)
-						{
-							/* Convert file size from int to string */
-							memset(buffer, '\0', sizeof(buffer));
-							sprintf(buffer, "%lu", st.st_size);
-							byteSize = st.st_size;
-
-							DBG_PRINT1("[ftserver] File size = %s\n", buffer);
-
-							/* Send file size to ftclient */
-							sendData(dataSocketFD, buffer, sizeof(buffer));
-
-							/* Receive ack from ftclient */
-							memset(buffer, '\0', sizeof(buffer));
-							receiveData(dataSocketFD, buffer, sizeof(buffer));
-
-							if (strcmp(buffer, "ftclient: ack") == 0)
-							{
-								/* Open requested file with read permissions */
-								fp = fopen(filename, "r");
-
-								if (!fp)
-								{
-									fprintf(stderr, "ftserver: error: failed to open file %s\n", filename);
-									status = ERROR_FILEIO;
-								}
-								else
-								{
-									/* Set filestream pointer to beginning of file */
-									fseek(fp, 0L, SEEK_SET);
-
-									DBG_PRINT1("[ftserver] byteSize = %ld\n", byteSize);
-
-									/* Allocate memory for the file buffer */
-									pBuffer = malloc(sizeof(char) * byteSize);
-
-									if (!pBuffer)
-									{
-										fprintf(stderr, "ftserver: error: out of memory during malloc");
-										exit(ERROR_OOM);
-									}
-
-									/* Read entire contents of file into memory */
-									fread(pBuffer, 1, byteSize, fp);
-#if DEBUG2
-									DBG_PRINT1("[ftserver] pBuffer = \"%s\"\n", pBuffer);
-#endif
-									/* Send file to ftclient */
-									sendData(dataSocketFD, pBuffer, byteSize);
-								}
-
-								/* Close file */
-								if (fp)
-									fclose(fp);
-							}
-							else
-							{
-								error("ftserver: error: failed to receive ack from ftserver\n");
-							}
-						}
-						else
-						{
-							DBG_PRINT("ftserver: error: file not found\n");
-
-							/* Signal ftclient filename is invalid */
-							pBuffer = "ftclient: error: file not found";
-							sendData(dataSocketFD, pBuffer, strlen2(pBuffer));
-
-							status = ERROR_FILEIO;
-						}
-					}
-				}
+				if (status != ERROR_NONE)
+					error(ERROR_GENERIC, "ftserver: error: handleRequest returned an status code\n");
 
 				/* ftserve closes the data connection after directory or file transfer */
 				if (dataSocketFD)
