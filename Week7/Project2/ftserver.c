@@ -334,7 +334,7 @@ int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostN
 * Return:		N/A
 * Description:	Handles a command request
 ******************************************************************************/
-int handleRequest(int dataSocketFd, int ctrlSocketFd, char cmd[MAX_BUFFER_SIZE])
+int handleRequest(int dataSocketFd, int ctrlSocketFd, int dataPort, char clientHostname[MAX_BUFFER_SIZE], char cmd[MAX_BUFFER_SIZE])
 {
 	pid_t pid;
 	char *args[MAX_CMDLINE_ARGUMENTS];
@@ -349,7 +349,7 @@ int handleRequest(int dataSocketFd, int ctrlSocketFd, char cmd[MAX_BUFFER_SIZE])
 
 	if (strcmp(cmd, "-l") == 0)
 	{
-		DBG_PRINT("[ftserver] cmd = -l\n");
+		printf("List directory requested on port %d.\n", dataPort);
 
 		/* Fork process to run a separate cmd */
 		pid = fork();
@@ -401,6 +401,8 @@ int handleRequest(int dataSocketFd, int ctrlSocketFd, char cmd[MAX_BUFFER_SIZE])
 
 			DBG_PRINT2("dataSocketFd = %d, buffer2 =\n%s\n", dataSocketFd, buffer2);
 
+			printf("Sending directory contents to %s:%d\n", clientHostname, dataPort);
+
 			/* Send output from child process to ftclient */
 			sendData(dataSocketFd, buffer2, sizeof(buffer2));
 			break;
@@ -421,9 +423,17 @@ int handleRequest(int dataSocketFd, int ctrlSocketFd, char cmd[MAX_BUFFER_SIZE])
 		{
 			DBG_PRINT("ftclient: error: file not found\n");
 
+			/* Send ftclient filename is invalid */
+			pBuffer = "ftclient: error";
+			sendData(dataSocketFd, pBuffer, sizeof(char) * strlen2(pBuffer));
+
+			/* Receive ack from ftclient */
+			memset(buffer, '\0', sizeof(buffer));
+			receiveData(dataSocketFd, buffer, sizeof(buffer));
+
 			/* Signal ftclient filename is invalid */
 			pBuffer = "ftclient: error: file not found";
-			sendData(ctrlSocketFd, pBuffer, strlen2(pBuffer));
+			sendData(ctrlSocketFd, pBuffer, sizeof(char) * strlen2(pBuffer));
 		}
 		else
 		{
@@ -555,8 +565,6 @@ int startup(int ctrlPort)
 	/* Convert the machine name into a special form of address */
 	ctrlServerHostInfo = gethostbyname(hostName);
 
-	DBG_PRINT2("hostName = %s, ctrlServerHostInfo = %s\n", hostName, ctrlServerHostInfo->h_name);
-
 	if (ctrlServerHostInfo == NULL)
 	{
 		error(ERROR_GETHOSTBYNAME, "ftserver: error: no such host\n");
@@ -597,7 +605,7 @@ int startup(int ctrlPort)
 		if (exitStatus)
 			exit(ERROR_NONE);
 
-		printf("[ftserver] Established control connection with %s:%d\n", hostName, ctrlPort);
+		printf("Server opened control connection at %s:%d\n", hostName, ctrlPort);
 
 		/* Process commands from ftclient */
 		{
@@ -654,15 +662,12 @@ int startup(int ctrlPort)
 
 				DBG_PRINT2("[ftserver] Established data connection with %s:%d\n", clientHostname, dataPort);
 
-				status = handleRequest(dataSocketFD, ctrlSocketFD, buffer);
-
-				if (status != ERROR_NONE)
-					error(ERROR_GENERIC, "ftserver: error: handleRequest returned an status code\n");
+				handleRequest(dataSocketFD, ctrlConnFD, dataPort, clientHostname, buffer);
 
 				/* ftserve closes the data connection after directory or file transfer */
 				if (dataSocketFD)
 				{
-					DBG_PRINT("[ftserver] Cleanup dataSocketFD\n");
+					DBG_PRINT("[ftserver] Closing dataSocketFD\n");
 					close(dataSocketFD);
 				}
 			}
@@ -675,21 +680,21 @@ int startup(int ctrlPort)
 	/* Close sockets */
 	if (ctrlSocketFD)
 	{
-		DBG_PRINT("[ftserver] Cleanup ctrlSocketFD\n");
+		DBG_PRINT("[ftserver] Closing ctrlSocketFD\n");
 		close(ctrlSocketFD);
 		ctrlSocketFD = 0;
 	}
 
 	if (ctrlConnFD)
 	{
-		DBG_PRINT("[ftserver] Cleanup ctrlConnFD\n");
+		DBG_PRINT("[ftserver] Closing ctrlConnFD\n");
 		close(ctrlConnFD);
 		ctrlConnFD = 0;
 	}
 
 	if (dataSocketFD)
 	{
-		DBG_PRINT("[ftserver] Cleanup dataSocketFD\n");
+		DBG_PRINT("[ftserver] Closing dataSocketFD\n");
 		close(dataSocketFD);
 		dataSocketFD = 0;
 	}

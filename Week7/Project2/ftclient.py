@@ -120,10 +120,12 @@ def initiateContact(hostname, ctrlPort):
 # Class:       makeRequest
 # Description: Parses command request and sends it to ftserver
 #------------------------------------------------------------------------------
-def makeRequest(cmd, dataConn, filename):
+def makeRequest(cmd, ctrlSockFD, dataConn, hostname, dataPort, filename):
 	if cmd == "-l":
 		# Receive connection request
 		data = receiveData(dataConn, 0, 0)
+
+		print("Receiving directory structure from " + hostname + ":" + dataPort)
 
 		# Output directory structure
 		print(data)
@@ -136,12 +138,16 @@ def makeRequest(cmd, dataConn, filename):
 
 		dbg_print("fileSize = " + fileSize)
 
-		if fileSize == "ftclient: error: file not found":
-			print("ftclient: error: file not found")
-		else:
-			# Send ack to ftserver
-			sendData(dataConn, "ftclient: ack")
+		# Send ack to ftserver
+		sendData(dataConn, "ftclient: ack")
 
+		if fileSize == "ftclient: error" or str(fileSize) == "":
+			# Receive error msg
+			data = receiveData(ctrlSockFD, 0, 0)
+
+			# Print error msg
+			print(data)
+		else:
 			# Wait for ftserver to send file
 			dbg_print("[ftclient] Wait for ftserver to send file");
 			data = receiveData(dataConn, fileSize, 1)
@@ -285,7 +291,7 @@ def startup():
 					dbg_print("[ftclient] Received connection request")
 
 				# Send cmd to ftserver
-				makeRequest(cmd, dataConn, filename)
+				makeRequest(cmd, ctrlSockFD, dataConn, hostname, dataPort, filename)
 
 		elif data == "ftserver: error: could not connect to ftclient":
 			print("ftclient: error: could not connect to ftclient")
