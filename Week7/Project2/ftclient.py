@@ -19,7 +19,7 @@ DEBUG 					= 1
 MAX_BUFFER_SIZE 		= 4096
 MAX_CONNECTION_REQUESTS	= 1
 CHAR_ENCODING_FORMAT	= "utf-8"
-DEFAULT_HOSTNAME        = "flip3.engr.oregonstate.edu"
+DEFAULT_HOSTNAME        = "localhost"
 DEFAULT_CTRLPORT        = 35121
 DEFAULT_DATAPORT        = 35122
 MIN_PORT_NUMBER			= 1
@@ -95,8 +95,7 @@ def receiveData(conn, fileSize, useFileSize):
 # Description: Starts a socket connection with ftserver
 #------------------------------------------------------------------------------
 def initiateContact(hostname, ctrlPort):
-	# Get hostname
-	hostname = socket.gethostname()
+	dbg_print("socket = " + hostname + ":" + str(ctrlPort))
 
 	# Register signal handler for SIGINT
 	signal.signal(signal.SIGINT, exitHandler)
@@ -234,6 +233,14 @@ def startup():
 			dbg_print("Receive response from ftserver");
 			data = receiveData(ctrlSockFD, 0, 0)
 
+			# Send port number to ftserver
+			dbg_print("Send hostname to ftserver");
+			sendData(ctrlSockFD, socket.gethostname())
+
+			# Receive response from ftserver
+			dbg_print("Receive response from ftserver");
+			data = receiveData(ctrlSockFD, 0, 0)
+
 			dbg_print("Received data = " + data)
 
 			# Parse ftserver response
@@ -252,8 +259,11 @@ def startup():
 				# Set socket options
 				dataSockFD.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
+				# Get ftclient host name
+				clientHostname = socket.gethostname()
+				
 				# Bind socket
-				dataSockFD.bind((hostname, dataPort))
+				dataSockFD.bind((clientHostname, dataPort))
 
 				# Listen for network traffic over the socket
 				dataSockFD.listen(1)

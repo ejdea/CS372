@@ -4,7 +4,7 @@
 * Last Modified:	11/30/2019
 * Course:			CS372
 * Title:			Project 2: FTP Server
-* Description:		This program acts as an FTP server that sends and receives 
+* Description:		This program acts as an FTP server that sends and receives
 *					files using socket programming.
 * References:		Sections of this code are based on Edmund's CS344 projects
 ******************************************************************************/
@@ -31,7 +31,7 @@
 #define NUM_ASCII_CHAR			27
 #define INCOMPLETE				0
 #define COMPLETE				1
-#define DEFAULT_HOSTNAME		"flip3.engr.oregonstate.edu"
+#define DEFAULT_HOSTNAME		"localhost"
 #define MAX_USERNAME_LEN		10
 #define MAX_CMDLINE_ARGUMENTS	512
 #define FD_STDIN				0
@@ -328,17 +328,6 @@ int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostN
 }
 
 /******************************************************************************
-* Name:			makeRequest
-* Arguments:	[in] socket file descriptor
-* Return:		N/A
-* Description:	Makes a command request
-******************************************************************************/
-void makeRequest(int socketFD)
-{
-
-}
-
-/******************************************************************************
 * Name:			handleRequest
 * Arguments:	[in] data socket file descriptor
 *				[in] command
@@ -521,7 +510,7 @@ int handleRequest(int dataSocketFd, char cmd[MAX_BUFFER_SIZE])
 * Description:	Starts the FTP server and handles connections with ftclient
 * References:	This function is originally based on Edmund's CS344 projects
 ******************************************************************************/
-int startup(char *hostName, int ctrlPort)
+int startup(int ctrlPort)
 {
 	int status = ERROR_NONE;
 	int dataPort = 0;
@@ -531,10 +520,12 @@ int startup(char *hostName, int ctrlPort)
 	char buffer[MAX_BUFFER_SIZE];
 	char buffer2[MAX_BUFFER_SIZE];
 	char *pBuffer;
+	char hostName[MAX_BUFFER_SIZE];
+	char clientHostname[MAX_BUFFER_SIZE];
 	socklen_t sizeOfClientInfo;
 	sig_action SIGINT_action_parent = { {0} };
-	
-	/* Init pipe to redirect cmd output to string 
+
+	/* Init pipe to redirect cmd output to string
 	 * Reference - https://stackoverflow.com/questions/50281787/putting-output-of-execvp-into-string
 	 */
 	pipe(pipe_fd);
@@ -548,27 +539,35 @@ int startup(char *hostName, int ctrlPort)
 
 	/* Set up the server address struct */
 	memset((char*)&ctrlSocketAddr, '\0', sizeof(ctrlSocketAddr));
-	
+
 	/* Create a network-capable socket */
 	ctrlSocketAddr.sin_family = AF_INET;
-	
+
 	/* Store the port number */
 	ctrlSocketAddr.sin_port = htons(ctrlPort);
-	
+
+	/* Get current computer's hostname
+	 * Reference - https://www.geeksforgeeks.org/c-program-display-hostname-ip-address/
+	 */
+	memset(hostName, '\0', sizeof(hostName));
+	gethostname(hostName, sizeof(hostName));
+
 	/* Convert the machine name into a special form of address */
 	ctrlServerHostInfo = gethostbyname(hostName);
-	
+
+	DBG_PRINT2("hostName = %s, ctrlServerHostInfo = %s\n", hostName, ctrlServerHostInfo->h_name);
+
 	if (ctrlServerHostInfo == NULL)
 	{
 		error(ERROR_GETHOSTBYNAME, "ftserver: error: no such host\n");
 	}
-	
+
 	/* Copy in the address */
 	memcpy((char*)&ctrlSocketAddr.sin_addr.s_addr, (char*)ctrlServerHostInfo->h_addr, ctrlServerHostInfo->h_length);
 
 	/* Create the socket */
 	ctrlSocketFD = socket(AF_INET, SOCK_STREAM, 0);
-	
+
 	if (ctrlSocketFD < 0)
 		error(ERROR_SOCKET, "ftserver: error: could not open socket");
 
@@ -579,7 +578,7 @@ int startup(char *hostName, int ctrlPort)
 	/* Enable the socket to begin listening. Connect socket to port */
 	if (bind(ctrlSocketFD, (struct sockaddr *)&ctrlSocketAddr, sizeof(ctrlSocketAddr)) < 0)
 		error(ERROR_SOCKET, "ftserver: error: could not bind socket to port");
-	
+
 	DBG_PRINT2("[ftserver] Ctrl Connection: hostName = %s, ctrlPort = %d\n", hostName, ctrlPort);
 
 	/* Enable socket - it can now receive up to 1 connection */
@@ -634,13 +633,26 @@ int startup(char *hostName, int ctrlPort)
 				pBuffer = "ftserver: ack";
 				sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
 
+				DBG_PRINT("[ftserver] Waiting to receive client hostname\n");
+
+				/* Receive ftclient hostname */
+				memset(buffer2, '\0', sizeof(buffer2));
+				receiveData(ctrlConnFD, buffer2, sizeof(buffer2));
+
+				/* Save ftclient hostname*/
+				strcpy(clientHostname, buffer2);
+
+				/* Send ack to ftclient */
+				pBuffer = "ftserver: ack";
+				sendData(ctrlConnFD, pBuffer, strlen2(pBuffer));
+
 				/* Initiate a data socket connection with ftclient */
-				status = initiateContact(&dataSocketFD, ctrlConnFD, dataPort, hostName);
+				status = initiateContact(&dataSocketFD, ctrlConnFD, dataPort, clientHostname);
 
 				if (status != ERROR_NONE)
 					error(ERROR_SOCKET, "ftserver: error: could not initiate contact with ftclient\n");
 
-				DBG_PRINT2("[ftserver] Established data connection with %s:%d\n", hostName, dataPort);
+				DBG_PRINT2("[ftserver] Established data connection with %s:%d\n", clientHostname, dataPort);
 
 				status = handleRequest(dataSocketFD, buffer);
 
@@ -681,7 +693,7 @@ int startup(char *hostName, int ctrlPort)
 		close(dataSocketFD);
 		dataSocketFD = 0;
 	}
-	
+
 	DBG_PRINT1("[ftserver] Return status %d\n", status);
 
 	return status;
@@ -695,14 +707,13 @@ int startup(char *hostName, int ctrlPort)
 ******************************************************************************/
 int main(int argc, char *argv[])
 {
-	char *hostName = DEFAULT_HOSTNAME;
 	int ctrlPort = 0;
 	int status = ERROR_NONE;
 
 	/* Check usage & args */
 	if (argc != 2)
 	{
-		fprintf(stderr,"usage: %s <port_number>\n", argv[0]);
+		fprintf(stderr, "usage: %s <port_number>\n", argv[0]);
 		exit(ERROR_ARGS);
 	}
 
@@ -713,7 +724,7 @@ int main(int argc, char *argv[])
 		ctrlPort = atoi(argv[1]);
 
 	/* Start FTP server */
-	status = startup(hostName, ctrlPort);
+	status = startup(ctrlPort);
 
 	/* Display exit */
 	printf("[ftserver] Exiting\n");
