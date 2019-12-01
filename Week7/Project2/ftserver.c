@@ -340,7 +340,8 @@ void makeRequest(int socketFD)
 
 /******************************************************************************
 * Name:			handleRequest
-* Arguments:	[in] socket file descriptor
+* Arguments:	[in] data socket file descriptor
+*				[in] command
 * Return:		N/A
 * Description:	Handles a command request
 ******************************************************************************/

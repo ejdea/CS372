@@ -49,51 +49,129 @@ def exitHandler(signum, frame):
 # Class:       send
 # Description: Sends a packet to the network destination
 #------------------------------------------------------------------------------
-def send(sock, data):
+def sendData(sock, data):
 	dbg_print("sent \"" + data + "\"")
 	sock.send(data)
 
 #------------------------------------------------------------------------------
-# Class:       receive
-# Description: Receives a packet from the network source
-#------------------------------------------------------------------------------
-def receive(conn):
-	data = conn.recv(MAX_BUFFER_SIZE)
-	dbg_print("received \"" + data + "\"")
-	return data
-
-#------------------------------------------------------------------------------
-# Class:       receiveFile
-# Description: Receives a file from the network source
+# Class:       receiveData
+# Description: Receives data from the network source
 # Reference:   This function is based on Edmund's CS344 project
 #------------------------------------------------------------------------------
-def receiveFile(conn, fileSize):
+def receiveData(conn, fileSize, useFileSize):
 	charsRead = 0
 	charsReadTotal = 0
 	buffer = ""
 
-	# Keep receiving file data until full file is transferred
-	while charsRead < fileSize:
-		data = conn.recv(MAX_BUFFER_SIZE)
+	if useFileSize == 0:
+		buffer = conn.recv(MAX_BUFFER_SIZE)
+		dbg_print("received \"" + buffer + "\"")
+	else:
+		# Keep receiving file data until full file is transferred
+		while charsRead < fileSize:
+			data = conn.recv(MAX_BUFFER_SIZE)
 
-		if not data:
-			# If received no data, then end loop
-			break
-		else:
-			# Get size of packet transferred
-			charsRead = len(data)
+			if not data:
+				# If received no data, then end loop
+				break
+			else:
+				# Get size of packet transferred
+				charsRead = len(data)
 
-			# Update total file size transferred
-			charsReadTotal += charsRead
+				# Update total file size transferred
+				charsReadTotal += charsRead
 
-			# Append data received to buffer
-			buffer += data
+				# Append data received to buffer
+				buffer += data
 
-			dbg_print("received " + str(charsReadTotal) + "/" + str(fileSize))
+				dbg_print("received " + str(charsReadTotal) + "/" + str(fileSize))
 
 	#dbg_print("[receiveFile] buffer = " + buffer)
 
 	return buffer
+
+#------------------------------------------------------------------------------
+# Class:       initiateContact
+# Description: Starts a socket connection with ftserver
+#------------------------------------------------------------------------------
+def initiateContact(hostname, ctrlPort):
+	# Get hostname
+	hostname = socket.gethostname()
+
+	# Register signal handler for SIGINT
+	signal.signal(signal.SIGINT, exitHandler)
+
+	# Open TCP socket
+	ctrlSockFD = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+	# Set socket options
+	ctrlSockFD.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+	# Connect to socket with control port
+	try:
+		ctrlSockFD.connect((hostname, ctrlPort))
+	except socket.error as err:
+		sock = None
+		print("ftclient: error: could not connect to " + hostname + ":" + str(ctrlPort))
+		sys.exit(ERR_ARGS)
+
+	return ctrlSockFD
+
+#------------------------------------------------------------------------------
+# Class:       makeRequest
+# Description: Parses command request and sends it to ftserver
+#------------------------------------------------------------------------------
+def makeRequest(cmd, dataConn, filename):
+	if cmd == "-l":
+		# Receive connection request
+		data = receiveData(dataConn, 0, 0)
+
+		# Output directory structure
+		print(data)
+	elif cmd == "-g":
+		# Send filename
+		sendData(dataConn, filename)
+
+		# Receive file payload size
+		fileSize = receiveData(dataConn, 0, 0)
+
+		dbg_print("fileSize = " + fileSize)
+
+		if fileSize == "ftclient: error: file not found":
+			print("ftclient: error: file not found")
+		else:
+			# Send ack to ftserver
+			sendData(dataConn, "ftclient: ack")
+
+			# Wait for ftserver to send file
+			dbg_print("[ftclient] Wait for ftserver to send file");
+			data = receiveData(dataConn, fileSize, 1)
+
+			#dbg_print("data = " + data)
+
+			# Check if file exists already
+			# Reference: https://linuxize.com/post/python-check-if-file-exists/
+			if os.path.exists(filename):
+				choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
+				while not choice or (choice != "y" and choice != "n"):
+					choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
+
+			if choice == "y":
+				# Save data to file
+				fpFile = open(filename, "w")
+
+				# Write data to file
+				# Reference: https://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
+				fpFile.write(data)
+
+				# Cleanup
+				if (fpFile):
+					fpFile.close()
+			elif choice == "n":
+				print("Skipping file write since user chose not to overwrite")
+
+			# Output status
+			print("transfer complete")
 
 #------------------------------------------------------------------------------
 # Class:       startup
@@ -129,8 +207,8 @@ def startup():
 		if len(sys.argv) == 6:
 			filename = sys.argv[5]
 
-	# Get hostname
-	hostname = socket.gethostname()
+	# Initiate contact with ftserver
+	ctrlSockFD = initiateContact(hostname, ctrlPort)
 
 	# Debug output
 	dbg_print("hostname = " + hostname)
@@ -140,38 +218,21 @@ def startup():
 	if len(sys.argv) == 6:
 		dbg_print("filename = " + filename)
 
-	# Register signal handler for SIGINT
-	signal.signal(signal.SIGINT, exitHandler)
-
-	# Open TCP socket
-	ctrlSockFD = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-	# Set socket options
-	ctrlSockFD.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-	# Connect to socket with control port
-	try:
-		ctrlSockFD.connect((hostname, ctrlPort))
-	except socket.error as err:
-		sock = None
-		print("ftclient: error: could not connect to " + hostname + ":" + str(ctrlPort))
-		sys.exit(ERR_ARGS)
-
 	try:
 		# Send command to ftserver
-		send(ctrlSockFD, cmd)
+		sendData(ctrlSockFD, cmd)
 
 		# Wait for ack response from ftserver
-		data = receive(ctrlSockFD)
+		data = receiveData(ctrlSockFD, 0, 0)
 
 		if (data == "ftserver: ack"):
 			# Send port number to ftserver
 			dbg_print("Send port number to ftserver");
-			send(ctrlSockFD, str(dataPort))
+			sendData(ctrlSockFD, str(dataPort))
 
 			# Receive response from ftserver
 			dbg_print("Receive response from ftserver");
-			data = receive(ctrlSockFD)
+			data = receiveData(ctrlSockFD, 0, 0)
 
 			dbg_print("Received data = " + data)
 
@@ -199,7 +260,7 @@ def startup():
 
 				# Let ftserver know that ftclient is ready to receive connections
 				dbg_print("[ftclient] Let ftserver know that ftclient is ready to receive connections");
-				send(ctrlSockFD, "ftclient: data connection ready")
+				sendData(ctrlSockFD, "ftclient: data connection ready")
 
 				dbg_print("[ftclient] Listen started...")
 
@@ -208,61 +269,13 @@ def startup():
 
 				# Wait for ack response from ftserver
 				dbg_print("[ftclient] Wait for ack response from ftserver");
-				data = receive(ctrlSockFD)
+				data = receiveData(ctrlSockFD, 0, 0)
 
 				if data == "ftserver: ack":
 					dbg_print("[ftclient] Received connection request")
 
-					if cmd == "-l":
-						# Receive connection request
-						data = receive(dataConn)
-
-						# Output directory structure
-						print(data)
-					elif cmd == "-g":
-						# Send filename
-						send(dataConn, filename)
-
-						# Receive file payload size
-						fileSize = receive(dataConn)
-
-						dbg_print("fileSize = " + fileSize)
-
-						if fileSize == "ftclient: error: file not found":
-							print("ftclient: error: file not found")
-						else:
-							# Send ack to ftserver
-							send(dataConn, "ftclient: ack")
-
-							# Wait for ftserver to send file
-							dbg_print("[ftclient] Wait for ftserver to send file");
-							data = receiveFile(dataConn, fileSize)
-
-							#dbg_print("data = " + data)
-
-							# Check if file exists already
-							# Reference: https://linuxize.com/post/python-check-if-file-exists/
-							if os.path.exists(filename):
-								choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
-								while not choice or (choice != "y" and choice != "n"):
-									choice = raw_input("File already exists. Do you want to overwrite \"" + filename + "\" (y/n)? ")
-
-							if choice == "y":
-								# Save data to file
-								fpFile = open(filename, "w")
-
-								# Write data to file
-								# Reference: https://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
-								fpFile.write(data)
-
-								# Cleanup
-								if (fpFile):
-									fpFile.close()
-							elif choice == "n":
-								print("Skipping file write since user chose not to overwrite")
-
-							# Output status
-							print("transfer complete")
+				# Send cmd request to ftserver
+				makeRequest(cmd, dataConn, filename)
 
 		elif data == "ftserver: error: could not connect to ftclient":
 			print("ftclient: error: could not connect to ftclient")
@@ -271,12 +284,13 @@ def startup():
 	except Exception as e:
 		print("ftclient: error: " + str(e));
 	finally:
-		dbg_print("Closing socket")
+		dbg_print("Closing sockets")
 
-		# Cleanup
+		# Close sockets
 		if ctrlSockFD is not None:
 			dbg_print("Closing ctrlSockFD")
 			ctrlSockFD.close()
+
 		if dataSockFD is not None:
 			dbg_print("Closing dataSockFD")
 			dataSockFD.close()
