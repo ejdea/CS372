@@ -1,11 +1,11 @@
 ###############################################################################
-# Author:	 		Edmund Dea (deae@oregonstate.edu)
+# Author:	 	Edmund Dea (deae@oregonstate.edu)
 # Student ID:		933280343
 # Last Modified:	11/30/2019
-# Course:			CS372
-# Title:			Project 2: FTP Client
+# Course:		CS372
+# Title:		Project 2: FTP Client
 # Description:		This program acts an FTP client that sends and receives 
-#					files with an FTP server using socket programming.
+#			files with an FTP server using socket programming.
 ###############################################################################
 
 import socket
@@ -13,20 +13,20 @@ import sys
 import signal
 import os.path
 
-DEBUG 					= 0
+DEBUG 				= 0
 
 # Macros
 MAX_BUFFER_SIZE 		= 4096
-MAX_CONNECTION_REQUESTS	= 1
-CHAR_ENCODING_FORMAT	= "utf-8"
-DEFAULT_HOSTNAME        = "localhost"
-DEFAULT_CTRLPORT        = 35121
-DEFAULT_DATAPORT        = 35122
+MAX_CONNECTION_REQUESTS		= 1
+CHAR_ENCODING_FORMAT		= "utf-8"
+DEFAULT_HOSTNAME        	= "localhost"
+DEFAULT_CTRLPORT        	= 35121
+DEFAULT_DATAPORT        	= 35122
 MIN_PORT_NUMBER			= 1
-MAX_PORT_NUMBER         = 2
+MAX_PORT_NUMBER			= 2
 
 # Exit codes
-ERR_ARGS                = 1
+ERR_ARGS			= 1
 
 #------------------------------------------------------------------------------
 # Class:       dbg_print
@@ -313,10 +313,10 @@ def startup():
 			dataSockFD.close()
 
 #------------------------------------------------------------------------------
-# Function:		Main
+# Function:	Main
 # Description:	Entrypoint for the application
 # References:	https://docs.python.org/release/2.6.5/howto/sockets.html
-#				https://docs.python.org/2/howto/sockets.html
+#		https://docs.python.org/2/howto/sockets.html
 #------------------------------------------------------------------------------
 if __name__ == "__main__":
 	startup()

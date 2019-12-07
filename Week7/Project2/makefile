@@ -1,9 +1,9 @@
 ###############################################################################
-# Author:	 		Edmund Dea (deae@oregonstate.edu)
+# Author:	 	Edmund Dea (deae@oregonstate.edu)
 # Student ID:		933280343
 # Last Modified:	12/1/2019
-# Course:			CS372
-# Title:			makefile
+# Course:		CS372
+# Title:		makefile
 # Description:		Builds ftserver
 ###############################################################################
 

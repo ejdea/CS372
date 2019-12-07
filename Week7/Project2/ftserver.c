@@ -1,11 +1,11 @@
 /******************************************************************************
-* Author:			Edmund Dea (deae@oregonstate.edu)
+* Author:		Edmund Dea (deae@oregonstate.edu)
 * Student ID:		933280343
 * Last Modified:	11/30/2019
-* Course:			CS372
-* Title:			Project 2: FTP Server
+* Course:		CS372
+* Title:		Project 2: FTP Server
 * Description:		This program acts as an FTP server that sends and receives
-*					files using socket programming.
+*			files using socket programming.
 * References:		Sections of this code are based on Edmund's CS344 projects
 ******************************************************************************/
 
@@ -22,34 +22,34 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define DEBUG					0
+#define DEBUG				0
 
 /* Global macros */
 #define MAX_BUFFER_SIZE			4096
 #define MAX_CHAR_PER_LINE		100
 #define NUM_CONNECTIONS			5
 #define NUM_ASCII_CHAR			27
-#define INCOMPLETE				0
-#define COMPLETE				1
+#define INCOMPLETE			0
+#define COMPLETE			1
 #define DEFAULT_HOSTNAME		"localhost"
 #define MAX_USERNAME_LEN		10
-#define MAX_CMDLINE_ARGUMENTS	512
-#define FD_STDIN				0
-#define FD_STDOUT				1
-#define FD_STDERR				2
+#define MAX_CMDLINE_ARGUMENTS		512
+#define FD_STDIN			0
+#define FD_STDOUT			1
+#define FD_STDERR			2
 
 /* Exit codes */
-#define ERROR_NONE					0
-#define ERROR_GENERIC				1
+#define ERROR_NONE			0
+#define ERROR_GENERIC			1
 #define ERROR_CONNECTION_REFUSED	2
-#define ERROR_ARGS					3
-#define ERROR_FILEIO				4
-#define ERROR_OOM					5
-#define ERROR_SEND					6
-#define ERROR_FORK					7
-#define ERROR_EXEC					8
-#define ERROR_GETHOSTBYNAME			9
-#define ERROR_SOCKET				10
+#define ERROR_ARGS			3
+#define ERROR_FILEIO			4
+#define ERROR_OOM			5
+#define ERROR_SEND			6
+#define ERROR_FORK			7
+#define ERROR_EXEC			8
+#define ERROR_GETHOSTBYNAME		9
+#define ERROR_SOCKET			10
 
 /* Debug print macros */
 #if DEBUG
@@ -71,9 +71,9 @@ static int exitStatus = 0;
 static int pipe_fd[2];
 
 /******************************************************************************
-* Name:			error
+* Name:		error
 * Arguments:	string
-* Return:		void
+* Return:	void
 * Description:	Error function used for reporting issues
 ******************************************************************************/
 void error(int exitCode, const char *msg)
@@ -109,9 +109,9 @@ void error(int exitCode, const char *msg)
 }
 
 /******************************************************************************
-* Name:			strlen2
+* Name:		strlen2
 * Arguments:	N/A
-* Return:		String length
+* Return:	String length
 * Description:	Returns number of characters in the input string
 * References:	This function is based on Edmund's CS344 projects
 ******************************************************************************/
@@ -126,9 +126,9 @@ int strlen2(char* input)
 }
 
 /******************************************************************************
-* Name:			catchSIGINT
+* Name:		catchSIGINT
 * Arguments:	N/A
-* Return:		void
+* Return:	void
 * Description:	Catches and handles the SIGINT signal.
 * References:	This function is based on Edmund's CS344 projects
 ******************************************************************************/
@@ -170,9 +170,9 @@ void catchSIGINT(int signo)
 }
 
 /******************************************************************************
-* Name:			sendData
+* Name:		sendData
 * Arguments:	socket file descriptor, data
-* Return:		Exit Code
+* Return:	Exit Code
 * Description:	Transmits data over the socket to the target host
 * References:	This function was previously developed in CS344
 ******************************************************************************/
@@ -210,10 +210,11 @@ int sendData(int socketFD, char *data, int bufferSize)
 }
 
 /******************************************************************************
-* Name:			receiveData
+* Name:		receiveData
 * Arguments:	[in] socket file descriptor
-*				[out] buffer
-* Return:		charsRead
+*		[out] buffer
+*		[in] buffer length
+* Return:	charsRead
 * Description:	Receives data from the target host
 * References:	This function was previously developed in CS344
 ******************************************************************************/
@@ -248,9 +249,12 @@ int receiveData(int socketFD, char *buffer, int bufferSize)
 }
 
 /******************************************************************************
-* Name:			initiateContact
+* Name:		initiateContact
 * Arguments:	[in] socket file descriptor
-* Return:		N/A
+*		[in] control socket file descriptor
+*		[in] data socket port number
+*		[in] target host name
+* Return:	Status code
 * Description:	Initiates a connection request
 ******************************************************************************/
 int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostName)
@@ -328,10 +332,14 @@ int initiateContact(int *dataSocketFD, int ctrlConnFD, int dataPort, char *hostN
 }
 
 /******************************************************************************
-* Name:			handleRequest
+* Name:		handleRequest
 * Arguments:	[in] data socket file descriptor
-*				[in] command
-* Return:		N/A
+*		[in] control socket file descriptor
+*		[in] control socket port number
+*		[in] data port number
+*		[in] client hostname
+*		[in] command
+* Return:	N/A
 * Description:	Handles a command request
 ******************************************************************************/
 int handleRequest(int dataSocketFd, int ctrlSocketFd, int ctrlPort, int dataPort, char clientHostname[MAX_BUFFER_SIZE], char cmd[MAX_BUFFER_SIZE])
@@ -528,9 +536,9 @@ int handleRequest(int dataSocketFd, int ctrlSocketFd, int ctrlPort, int dataPort
 }
 
 /******************************************************************************
-* Name:			startup
-* Arguments:	N/A
-* Return:		Exit Code
+* Name:		startup
+* Arguments:	[in] control port number
+* Return:	Exit Code
 * Description:	Starts the FTP server and handles connections with ftclient
 * References:	This function is originally based on Edmund's CS344 projects
 ******************************************************************************/
@@ -608,7 +616,7 @@ int startup(int ctrlPort)
 
 	while (1)
 	{
-		printf("[ftserver] Waiting for client to connect...\n");
+		printf("Waiting for client to connect...\n");
 
 		/* Accept connection */
 		ctrlConnFD = accept(ctrlSocketFD, (struct sockaddr *)&ctrlSocketAddr, &sizeOfClientInfo);
@@ -719,9 +727,9 @@ int startup(int ctrlPort)
 }
 
 /******************************************************************************
-* Name:			main
+* Name:		main
 * Arguments:	argc, argv
-* Return:		Exit Code
+* Return:	Exit Code
 * Description:	Entry point for ftserver
 ******************************************************************************/
 int main(int argc, char *argv[])
