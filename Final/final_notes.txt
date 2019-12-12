@@ -1,0 +1,111 @@
+#6
+
+A host starts a TCP transmission with an EstimatedRTT of 14.1ms (from the “handshake”). The host then sends 3 packets and records the RTT for each:
+
+SampleRTT1 = 36.8 ms
+
+SampleRTT2 = 38.1 ms
+
+SampleRTT3 = 44.1 ms
+
+(NOTE: SampleRTT1 is the “oldest”; SampleRTT3 is the most recent.)
+
+Using an exponential weighted moving average with a weight of 0.4 given to the most recent sample, what is the EstimatedRTT for packet #4? Give answer in miliseconds, rounded to one decimal place, without units, so for an answer of 0.01146 seconds, you would enter "11.5" without the quotes.
+
+EstimatedRTT = (1-a) * EstimatedRTT_n-1 + a * SampleRTT
+
+EstimatedRTT1 = 14.1 ms
+EstimatedRTT2 = (1 - 0.4) * 14.1 + 0.4 * 36.8 = 23.18
+EstimatedRTT3 = (1 - 0.4) * 23.18 + 0.4 * 38.1 = 29.148
+EstimatedRTT4 = (1 - 0.4) * 29.148 + 0.4 * 44.1 = 35.1288 = 35.1 ms
+
+________________________________
+
+#17
+
+Given the following routing table that uses prefix matching. A datagram arrives with destination address 140.27.93.31
+
+140.27.93.31
+10001100 00011011 01011101 00011111
+
+________________________________
+
+#19
+
+Given a nodal delay of 4 ms when there is no traffic on the network (when utilization = 0%). What is the effective delay when network utilization is 25% ?
+
+D0 = 4 * (1 - 0.00) = 4
+Effective Delay = 4 / (1 - 0.25) = 5.3333333333333333333333333333333 = 5.3 ms
+
+_________________________________
+
+#27
+
+Use this IPv4 CIDR address for problems #27 - 30:
+
+128.35.185.125/24
+
+What is the netmask?
+
+128.35.185.125/24
+10000000 00100011 10111001 01111101/24 (host address) (128.35.185.125/24)
+11111111 11111111 11111111 00000000/24 (net mask) (255.255.255.0)
+00000000 00000000 00000000 11111111/24 (host mask) (0.0.0.255)
+
+10000000 00100011 10111001 01111101/24 (host address) (128.35.185.125/24)
+00000000 00000000 00000000 11111111/24 (host mask) (0.0.0.255) [OR]
+10000000 00100011 10111001 11111111/24 (broadcast address (128.35.185.255)
+
+10000000 00100011 10111001 01111101/24 (host address) (128.35.185.125/24)
+00000000 00000000 00000000 11111111/24 (host mask) (0.0.0.255) [AND]
+00000000 00000000 00000000 01111101/24 (host number) (125)
+
+10000000 00100011 10111001 01111101/24 (host address) (128.35.185.125/24)
+11111111 11111111 11111111 00000000/24 (net mask) (255.255.255.0) [AND]
+10000000 00100011 10111001 00000000/24 (network address) (128.35.185.0)
+
+32-24 = 8 bits, 2^8-2 = 254 total addresses
+
+_________________________________
+
+Use this information for problems #32 – 34:
+ 
+An IPv4 datagram (identification #450) with 1600 bytes of application data encounters a router which has a 420-byte MTU. Assume the minimum IP and TCP header sizes, i.e., the IP header is 20 bytes and the TCP header is 20 bytes.
+
+#32 
+How many fragments are generated?
+ceil((1600-20) / (420-20)) = ceil(1580/400) = ceil(3.95) = 4 segments
+
+#33
+What is the identification number on the last fragment? #450
+
+#34
+How many bytes of application data are carried in the second fragment?
+frag1 = 420 - 20 TCP header - 20 IP header = 380 bytes
+frag2 = 420 - 20 IP header = 400 bytes
+
+_________________________________
+
+#39
+
+Given the following "byte stuffing" scheme:
+
+Byte_Stuff
+Note: soh and eot are the framing characters.
+
+DATA:    79h 7Ah 01h 04h
+
+If byte stuffing is used to transmit Data, what is the byte sequence of the frame (including framing characters)? Format answer with capital hex values, with each value followed by an 'h' and separated by spaces, for example: 0Ah 12h
+
+79h 7Ah 01h 04h
+01h 79h 7Ah 1Bh 78h 1Bh 79h 04h
+
+79h 7Ah 01h 04h
+01h 79h 7Ah 1Bh 78h 1Bh 79h 04h
+
+_________________________________
+
+#40
+
+Assign a new, valid IPv4 address to RouterA's NIC#1: 198.137.25.1
+Assign a new, valid MAC address to RouterA's NIC#1: 44:55:66:77:88:99
