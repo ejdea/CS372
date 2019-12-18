@@ -1,0 +1,7 @@
+n = pq = 5*11 = 55
+z = (p-1)(q-1) = 4*10 = 40
+e < n 
+e has no common factors with z=40
+(ed-1) % z = 0
+ed % z = 1
+7*63-1 mod 40 = 0
